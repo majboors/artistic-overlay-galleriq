@@ -5,12 +5,14 @@ import Check from "@/pages/Check";
 import Upload from "@/pages/Upload";
 import ApiTest from "@/pages/ApiTest";
 import NotFound from "@/pages/NotFound";
+import Index from "@/pages/Index";
 
 const App = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Upload />} />
+        <Route path="/" element={<Index />} />
+        <Route path="/upload" element={<Upload />} />
         <Route path="/check" element={<Check />} />
         <Route path="/api-test" element={<ApiTest />} />
         <Route path="*" element={<NotFound />} />
