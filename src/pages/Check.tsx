@@ -1,228 +1,291 @@
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Check, X, Filter, AlertCircle } from "lucide-react";
+import { useState } from "react";
 import { api } from "@/lib/api";
-import type { ImageRecord } from "@/types/api";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { AlertCircle, CheckCircle, Upload, Filter, Image, Eye } from "lucide-react";
+import { parseImageData, formatDate } from "@/lib/utils";
 
-type FilterType = 'all' | 'true' | 'false' | 'unmarked';
+interface ImageDisplay {
+  id: string;
+  studentName: string;
+  grade: string;
+  title: string;
+  timestamp: string;
+  marking: boolean | null;
+  url?: string;
+}
 
-const CheckPage = () => {
-  const [images, setImages] = useState<ImageRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<FilterType>('unmarked'); // Start with unmarked images
+const Check = () => {
+  const [displayedImages, setDisplayedImages] = useState<ImageDisplay[]>([]);
+  const [loading, setLoading] = useState<string | null>(null);
+  const [imageId, setImageId] = useState("");
+  const [viewImageId, setViewImageId] = useState("");
+  const [file, setFile] = useState<File | null>(null);
   const { toast } = useToast();
 
-  const loadImages = async (filterValue: FilterType = 'unmarked') => {
-    setLoading(true);
-    setError(null);
+  const processImageData = (data: any) => {
+    if (Array.isArray(data)) {
+      return data.map(img => ({
+        id: img.id,
+        ...parseImageData(img.datefield),
+        timestamp: formatDate(img.timestamp),
+        marking: img.marking,
+        url: api.getImageById(img.id)
+      }));
+    } else if (data.id) {
+      return [{
+        id: data.id,
+        ...parseImageData(data.datefield),
+        timestamp: formatDate(data.timestamp),
+        marking: data.marking,
+        url: api.getImageById(data.id)
+      }];
+    }
+    return [];
+  };
+
+  const getImages = async (filter?: 'true' | 'false' | 'unmarked') => {
     try {
-      console.log('Loading images with filter:', filterValue);
-      const data = await api.getImages(filterValue === 'all' ? undefined : filterValue);
-      console.log("Fetched images:", data);
-      
-      if (!Array.isArray(data)) {
-        throw new Error('Invalid response format from server');
-      }
-      
-      setImages(data);
-      
-      if (data.length === 0) {
-        toast({
-          title: "No Images Found",
-          description: "No images available for the selected filter",
-        });
-      }
+      setLoading('getImages');
+      const result = await api.getImages(filter);
+      setDisplayedImages(processImageData(result));
+      toast({
+        title: "Success",
+        description: "Retrieved images successfully",
+      });
     } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : "Failed to connect to the server. Please try again later.";
-      
-      console.error("Error loading images:", error);
-      setError(errorMessage);
       toast({
         title: "Error",
-        description: errorMessage,
+        description: "Failed to get images",
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setLoading(null);
     }
   };
 
-  useEffect(() => {
-    loadImages(filter);
-  }, [filter]);
-
-  const handleMark = async (id: string, marking: boolean) => {
+  const getUnmarkedImage = async () => {
     try {
-      await api.markImage(id, marking);
+      setLoading('getUnmarked');
+      const result = await api.getUnmarkedImage();
+      setDisplayedImages(processImageData([result]));
       toast({
         title: "Success",
-        description: marking ? "Image approved" : "Image rejected",
+        description: "Retrieved unmarked image successfully",
       });
-      loadImages(filter);
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update image status",
+        description: "Failed to get unmarked image",
         variant: "destructive",
       });
+    } finally {
+      setLoading(null);
     }
   };
 
-  const getStatusBadge = (marking: boolean | null) => {
-    if (marking === null) return "Pending Review";
-    return marking ? "Approved" : "Rejected";
+  const markImage = async (id: string, marking: boolean) => {
+    try {
+      setLoading('markImage');
+      await api.markImage(id, marking);
+      // Update the local state
+      setDisplayedImages(prev => 
+        prev.map(img => 
+          img.id === id ? { ...img, marking } : img
+        )
+      );
+      toast({
+        title: "Success",
+        description: `Image marked as ${marking ? 'approved' : 'rejected'}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to mark image",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(null);
+    }
   };
 
-  const getStatusColor = (marking: boolean | null) => {
-    if (marking === null) return "text-yellow-500";
-    return marking ? "text-green-500" : "text-red-500";
+  const uploadImage = async () => {
+    if (!file) {
+      toast({
+        title: "Error",
+        description: "Please select a file first",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      setLoading('uploadImage');
+      const formData = new FormData();
+      formData.append('image', file);
+      const result = await api.uploadImage(formData);
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully",
+      });
+      // Refresh the image list after upload
+      getImages();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to upload image",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(null);
+    }
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white">Loading...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <AlertCircle className="h-12 w-12 text-red-500" />
-        <div className="text-white text-center">
-          <h2 className="text-xl font-semibold mb-2">Error Loading Images</h2>
-          <p className="text-gray-400">{error}</p>
-        </div>
-        <Button onClick={() => loadImages(filter)} variant="outline">
-          Retry
-        </Button>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen w-full">
-      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70 -z-10" />
-      
-      <div className="container max-w-6xl mx-auto px-4 py-16">
-        {/* Debug Panel */}
-        <div className="mb-8 p-4 bg-black/50 rounded-lg">
-          <h2 className="text-white font-semibold mb-2">Debug Information:</h2>
-          <pre className="text-xs text-gray-300 overflow-auto max-h-40">
-            {JSON.stringify({ filter, images }, null, 2)}
-          </pre>
-        </div>
+    <div className="min-h-screen bg-gray-900 text-white p-8">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-3xl font-bold mb-8">Image Review Dashboard</h1>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="glass rounded-xl p-8"
-        >
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-white">Review Artwork</h1>
-            
-            <div className="flex items-center gap-2">
-              <Filter size={20} className="text-gray-400" />
-              <Select
-                value={filter}
-                onValueChange={(value) => setFilter(value as FilterType)}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter images" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Images</SelectItem>
-                  <SelectItem value="true">Approved</SelectItem>
-                  <SelectItem value="false">Rejected</SelectItem>
-                  <SelectItem value="unmarked">Pending Review</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {images.map((image) => {
-              let details;
-              try {
-                details = JSON.parse(image.datefield);
-              } catch {
-                details = { title: "Untitled", studentName: "Unknown", grade: "Unspecified" };
-              }
-
-              return (
-                <motion.div
-                  key={image.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="glass rounded-lg overflow-hidden"
+        <div className="grid gap-8">
+          {/* Controls Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Filter Controls */}
+            <div className="bg-gray-800 rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">Filter Images</h2>
+              <div className="flex gap-4 flex-wrap">
+                <Button
+                  onClick={() => getImages()}
+                  disabled={loading === 'getImages'}
+                  variant="outline"
                 >
-                  <div className="aspect-square">
-                    <img
-                      src={api.getImageById(image.id)}
-                      alt={details.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+                  <Filter className="mr-2 h-4 w-4" />
+                  All Images
+                </Button>
+                <Button
+                  onClick={() => getImages('unmarked')}
+                  disabled={loading === 'getImages'}
+                  variant="outline"
+                >
+                  Unmarked
+                </Button>
+                <Button
+                  onClick={() => getImages('true')}
+                  disabled={loading === 'getImages'}
+                  variant="outline"
+                >
+                  Approved
+                </Button>
+                <Button
+                  onClick={() => getImages('false')}
+                  disabled={loading === 'getImages'}
+                  variant="outline"
+                >
+                  Rejected
+                </Button>
+                <Button
+                  onClick={getUnmarkedImage}
+                  disabled={loading === 'getUnmarked'}
+                  variant="outline"
+                >
+                  <Image className="mr-2 h-4 w-4" />
+                  Next Unmarked
+                </Button>
+              </div>
+            </div>
 
-                  <div className="p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h3 className="text-lg font-semibold text-white">{details.title}</h3>
-                        <p className="text-sm text-gray-300">{details.studentName}</p>
-                        <p className="text-sm text-gray-400">{details.grade}</p>
-                      </div>
-                      <span className={`text-sm font-medium ${getStatusColor(image.marking)}`}>
-                        {getStatusBadge(image.marking)}
-                      </span>
-                    </div>
-
-                    <div className="flex gap-2 mt-4">
-                      <Button
-                        onClick={() => handleMark(image.id, false)}
-                        variant={image.marking === false ? "destructive" : "outline"}
-                        size="sm"
-                        className="flex-1"
-                      >
-                        <X className="h-4 w-4 mr-2" />
-                        Reject
-                      </Button>
-                      
-                      <Button
-                        onClick={() => handleMark(image.id, true)}
-                        variant={image.marking === true ? "default" : "outline"}
-                        size="sm"
-                        className="flex-1"
-                      >
-                        <Check className="h-4 w-4 mr-2" />
-                        Approve
-                      </Button>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
+            {/* Upload Section */}
+            <div className="bg-gray-800 rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">Upload New Image</h2>
+              <div className="flex gap-4 items-end">
+                <div className="flex-1">
+                  <Input
+                    type="file"
+                    onChange={(e) => setFile(e.target.files?.[0] || null)}
+                    className="bg-gray-700 border-gray-600"
+                    accept="image/*"
+                  />
+                </div>
+                <Button
+                  onClick={uploadImage}
+                  disabled={loading === 'uploadImage'}
+                  variant="outline"
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload
+                </Button>
+              </div>
+            </div>
           </div>
 
-          {images.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-gray-400">No images found for the selected filter</p>
-            </div>
-          )}
-        </motion.div>
+          {/* Images Display Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {displayedImages.map((image) => (
+              <div key={image.id} className="bg-gray-800 rounded-lg overflow-hidden">
+                {/* Image Preview */}
+                <div className="aspect-video bg-gray-900 relative">
+                  <img
+                    src={image.url}
+                    alt={image.title}
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      e.currentTarget.src = 'placeholder.svg';
+                    }}
+                  />
+                  <div className="absolute top-2 right-2">
+                    {image.marking === true && (
+                      <span className="bg-green-500 text-white px-2 py-1 rounded-full text-sm">
+                        Approved
+                      </span>
+                    )}
+                    {image.marking === false && (
+                      <span className="bg-red-500 text-white px-2 py-1 rounded-full text-sm">
+                        Rejected
+                      </span>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Image Details */}
+                <div className="p-4 space-y-2">
+                  <h3 className="font-semibold text-lg">{image.title}</h3>
+                  <p className="text-gray-400">Student: {image.studentName}</p>
+                  <p className="text-gray-400">Grade: {image.grade}</p>
+                  <p className="text-gray-400 text-sm">{image.timestamp}</p>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 mt-4">
+                    <Button
+                      onClick={() => markImage(image.id, true)}
+                      variant="outline"
+                      className="flex-1"
+                      disabled={loading === 'markImage'}
+                    >
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Approve
+                    </Button>
+                    <Button
+                      onClick={() => markImage(image.id, false)}
+                      variant="outline"
+                      className="flex-1"
+                      disabled={loading === 'markImage'}
+                    >
+                      <AlertCircle className="mr-2 h-4 w-4" />
+                      Reject
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {displayedImages.length === 0 && (
+              <div className="col-span-full text-center py-12 bg-gray-800 rounded-lg">
+                <p className="text-gray-400">
+                  No images to display. Use the controls above to load images.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
