@@ -6,6 +6,7 @@ import { Plus, Image, Star, Award, Rocket, CheckCircle } from "lucide-react";
 import { api } from "@/lib/api";
 import { parseImageData } from "@/lib/utils";
 import type { ImageRecord } from "@/types/api";
+
 const inspirationArtworks = [{
   id: 1,
   title: "Abstract Harmony",
@@ -25,6 +26,7 @@ const inspirationArtworks = [{
   grade: "Grade 12",
   imageUrl: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
 }];
+
 const features = [{
   icon: <Image className="w-6 h-6 text-primary" />,
   title: "Showcase Your Art",
@@ -42,10 +44,12 @@ const features = [{
   title: "Inspire Others",
   description: "Your art can inspire fellow students to create"
 }];
+
 const Index = () => {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [submissions, setSubmissions] = useState<ImageRecord[]>([]);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const loadSubmissions = async () => {
       try {
@@ -59,7 +63,9 @@ const Index = () => {
     };
     loadSubmissions();
   }, []);
-  return <div className="min-h-screen w-full overflow-hidden">
+
+  return (
+    <div className="min-h-screen w-full overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70 -z-10" />
       
       {/* Hero Section */}
@@ -149,19 +155,21 @@ const Index = () => {
           <h2 className="text-3xl font-bold text-white mb-12 text-center">Featured Submissions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {submissions.map((submission, index) => {
-            const details = parseImageData(submission.datefield);
-            return <motion.div key={submission.id} initial={{
-              opacity: 0,
-              y: 20
-            }} animate={{
-              opacity: 1,
-              y: 0
-            }} transition={{
-              duration: 0.5,
-              delay: index * 0.1
-            }} className="group relative">
+              const details = parseImageData(submission.datefield);
+              return (
+                <motion.div
+                  key={submission.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="group relative"
+                >
                   <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
-                    <img src={api.getImageById(submission.id)} alt={details.title} className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-110" />
+                    <img
+                      src={api.getImageById(submission.id)}
+                      alt={details.title}
+                      className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-110"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <div className="absolute bottom-0 left-0 right-0 p-6">
                         <div className="flex items-center gap-2 mb-2">
@@ -173,10 +181,12 @@ const Index = () => {
                       </div>
                     </div>
                   </div>
-                </motion.div>;
-          })}
+                </motion.div>
+              );
+            })}
           </div>
-          {submissions.length === 0 && !loading && <div className="text-center text-gray-400 py-12">
+          {submissions.length === 0 && !loading && (
+            <div className="text-center text-gray-400 py-12">
               <p>No approved submissions yet. Be the first to submit your artwork!</p>
               <Link to="/upload" className="inline-block mt-4">
                 <Button variant="outline">
@@ -184,9 +194,12 @@ const Index = () => {
                   Submit Artwork
                 </Button>
               </Link>
-            </div>}
+            </div>
+          )}
         </div>
       </section>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
