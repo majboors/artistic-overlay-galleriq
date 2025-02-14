@@ -1,31 +1,23 @@
 
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import Upload from "./pages/Upload";
-import Check from "./pages/Check";
-import NotFound from "./pages/NotFound";
+import Check from "@/pages/Check";
+import Upload from "@/pages/Upload";
+import ApiTest from "@/pages/ApiTest";
+import NotFound from "@/pages/NotFound";
 
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+const App = () => {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Upload />} />
+        <Route path="/check" element={<Check />} />
+        <Route path="/api-test" element={<ApiTest />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
       <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/upload" element={<Upload />} />
-          <Route path="/check" element={<Check />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+    </Router>
+  );
+};
 
 export default App;
