@@ -1,16 +1,17 @@
-
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, CheckCircle, Upload, Filter, Image } from "lucide-react";
+import { AlertCircle, CheckCircle, Upload, Filter, Image, Eye } from "lucide-react";
 
 const ApiTestPage = () => {
   const [responses, setResponses] = useState<{ endpoint: string; response: any }[]>([]);
   const [loading, setLoading] = useState<string | null>(null);
   const [imageId, setImageId] = useState("");
+  const [viewImageId, setViewImageId] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { toast } = useToast();
 
   const addResponse = (endpoint: string, response: any) => {
@@ -118,6 +119,20 @@ const ApiTestPage = () => {
     }
   };
 
+  const handleViewImage = () => {
+    if (!viewImageId) {
+      toast({
+        title: "Error",
+        description: "Please enter an image ID",
+        variant: "destructive",
+      });
+      return;
+    }
+    const imageUrl = api.getImageById(viewImageId);
+    setPreviewUrl(imageUrl);
+    addResponse(`GET /image/${viewImageId}`, { url: imageUrl });
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <div className="max-w-4xl mx-auto">
@@ -171,6 +186,47 @@ const ApiTestPage = () => {
               <Image className="mr-2 h-4 w-4" />
               Get One Unmarked Image
             </Button>
+          </div>
+
+          {/* View Image by ID Section */}
+          <div className="bg-gray-800 rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4">View Image by ID</h2>
+            <div className="flex gap-4 items-end">
+              <div className="flex-1">
+                <Input
+                  type="text"
+                  placeholder="Enter Image ID"
+                  value={viewImageId}
+                  onChange={(e) => setViewImageId(e.target.value)}
+                  className="bg-gray-700 border-gray-600"
+                />
+              </div>
+              <Button
+                onClick={handleViewImage}
+                variant="outline"
+                className="whitespace-nowrap"
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                View Image
+              </Button>
+            </div>
+            {previewUrl && (
+              <div className="mt-4 border border-gray-700 rounded-lg overflow-hidden">
+                <img 
+                  src={previewUrl} 
+                  alt="Preview" 
+                  className="w-full h-auto max-h-[300px] object-contain bg-gray-700"
+                  onError={() => {
+                    toast({
+                      title: "Error",
+                      description: "Failed to load image",
+                      variant: "destructive",
+                    });
+                    setPreviewUrl(null);
+                  }}
+                />
+              </div>
+            )}
           </div>
 
           {/* Mark Image Section */}
