@@ -82,6 +82,14 @@ const CheckPage = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70 -z-10" />
       
       <div className="container max-w-6xl mx-auto px-4 py-16">
+        {/* Debug Panel */}
+        <div className="mb-8 p-4 bg-black/50 rounded-lg">
+          <h2 className="text-white font-semibold mb-2">Debug Information:</h2>
+          <pre className="text-xs text-gray-300 overflow-auto max-h-40">
+            {JSON.stringify(images, null, 2)}
+          </pre>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
