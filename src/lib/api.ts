@@ -6,12 +6,12 @@ const API_BASE_URL = "https://imageprocessing.applytocollege.pk";
 // Create an axios instance with default config
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000, // Increased timeout
+  timeout: 30000,
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
   },
-  withCredentials: false // Explicitly disable credentials
+  withCredentials: false
 });
 
 // Add response interceptor for debugging
@@ -51,11 +51,17 @@ export const api = {
   getImages: async (marking?: 'true' | 'false' | 'unmarked') => {
     try {
       console.log('Fetching images with params:', { marking });
-      const params = marking ? { marking } : {};
+      
+      // Only add marking parameter if it's specified
+      const params = marking ? { marking } : undefined;
+      
       const response = await axiosInstance.get("/images", { params });
       
-      // Ensure we always return an array
+      // API always returns an array of image records
       const data = response.data;
+      console.log('Received images:', data);
+      
+      // Type check the response
       if (!Array.isArray(data)) {
         console.warn('API did not return an array:', data);
         return [];
