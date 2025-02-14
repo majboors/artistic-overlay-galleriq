@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
@@ -50,6 +49,10 @@ const Index = () => {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [submissions, setSubmissions] = useState<ImageRecord[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    document.title = "LGS JTI ART SUBMISSIONS";
+  }, []);
 
   useEffect(() => {
     const loadSubmissions = async () => {

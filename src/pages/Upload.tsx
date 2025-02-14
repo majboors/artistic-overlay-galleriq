@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
@@ -8,6 +7,10 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 
 const Upload = () => {
+  useEffect(() => {
+    document.title = "Upload Artwork - LGS JTI ART SUBMISSIONS";
+  }, []);
+
   const [image, setImage] = useState<File | null>(null);
   const [studentName, setStudentName] = useState("");
   const [grade, setGrade] = useState("");

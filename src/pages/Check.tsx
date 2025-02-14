@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +17,10 @@ interface ImageDisplay {
 }
 
 const Check = () => {
+  useEffect(() => {
+    document.title = "Check Submissions - LGS JTI ART SUBMISSIONS";
+  }, []);
+
   const [displayedImages, setDisplayedImages] = useState<ImageDisplay[]>([]);
   const [loading, setLoading] = useState<string | null>(null);
   const [imageId, setImageId] = useState("");
