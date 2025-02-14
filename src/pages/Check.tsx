@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Check, X, Filter } from "lucide-react";
+import { Check, X, Filter, AlertCircle } from "lucide-react";
 import { api } from "@/lib/api";
 import type { ImageRecord } from "@/types/api";
 import {
@@ -19,18 +19,24 @@ type FilterType = 'all' | 'true' | 'false' | 'unmarked';
 const CheckPage = () => {
   const [images, setImages] = useState<ImageRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterType>('all');
   const { toast } = useToast();
 
   const loadImages = async (filterValue: FilterType = 'all') => {
     setLoading(true);
+    setError(null);
     try {
       const data = await api.getImages(filterValue === 'all' ? undefined : filterValue);
-      setImages(data);
+      console.log("Fetched images:", data); // Debug log
+      setImages(Array.isArray(data) ? data : []);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to load images";
+      console.error("Error loading images:", error);
+      setError(errorMessage);
       toast({
         title: "Error",
-        description: "Failed to load images",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -77,6 +83,21 @@ const CheckPage = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <AlertCircle className="h-12 w-12 text-red-500" />
+        <div className="text-white text-center">
+          <h2 className="text-xl font-semibold mb-2">Error Loading Images</h2>
+          <p className="text-gray-400">{error}</p>
+        </div>
+        <Button onClick={() => loadImages(filter)} variant="outline">
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen w-full">
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70 -z-10" />
@@ -86,7 +107,7 @@ const CheckPage = () => {
         <div className="mb-8 p-4 bg-black/50 rounded-lg">
           <h2 className="text-white font-semibold mb-2">Debug Information:</h2>
           <pre className="text-xs text-gray-300 overflow-auto max-h-40">
-            {JSON.stringify(images, null, 2)}
+            {JSON.stringify({ filter, images }, null, 2)}
           </pre>
         </div>
 
