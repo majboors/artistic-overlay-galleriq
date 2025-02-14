@@ -1,8 +1,9 @@
+
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Image, Star, Award, Rocket, CheckCircle } from "lucide-react";
+import { Plus, Image, Star, Award, Rocket, CheckCircle, Wand2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { parseImageData } from "@/lib/utils";
 import type { ImageRecord } from "@/types/api";
@@ -70,27 +71,32 @@ const Index = () => {
       
       {/* Hero Section */}
       <header className="relative z-10 px-6 py-16 md:py-24 text-center">
-        <motion.div initial={{
-        opacity: 0,
-        y: 20
-      }} animate={{
-        opacity: 1,
-        y: 0
-      }} transition={{
-        duration: 0.8
-      }} className="max-w-4xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="max-w-4xl mx-auto"
+        >
           <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
             Student Art Gallery
           </h1>
           <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
             Discover and celebrate the artistic talent of our students through their creative expressions.
           </p>
-          <Link to="/upload">
-            <Button size="lg" className="bg-primary hover:bg-primary/90">
-              <Plus className="mr-2" />
-              Submit Your Artwork
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link to="/upload">
+              <Button size="lg" className="bg-primary hover:bg-primary/90">
+                <Plus className="mr-2" />
+                Submit Your Artwork
+              </Button>
+            </Link>
+            <a href="https://www.writecream.com/ai-image-generator-free-no-sign-up/" target="_blank" rel="noopener noreferrer">
+              <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
+                <Wand2 className="mr-2" />
+                Try AI Art Generator
+              </Button>
+            </a>
+          </div>
         </motion.div>
       </header>
 
