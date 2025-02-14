@@ -91,7 +91,7 @@ const CheckPage = () => {
             <h1 className="text-3xl font-bold text-white">Review Artwork</h1>
             
             <div className="flex items-center gap-2">
-              <Filter className="text-gray-400" />
+              <Filter size={20} className="text-gray-400" />
               <Select
                 value={filter}
                 onValueChange={(value) => setFilter(value as FilterType)}
@@ -152,7 +152,7 @@ const CheckPage = () => {
                         size="sm"
                         className="flex-1"
                       >
-                        <X className="mr-2 h-4 w-4" />
+                        <X className="h-4 w-4 mr-2" />
                         Reject
                       </Button>
                       
@@ -162,7 +162,7 @@ const CheckPage = () => {
                         size="sm"
                         className="flex-1"
                       >
-                        <Check className="mr-2 h-4 w-4" />
+                        <Check className="h-4 w-4 mr-2" />
                         Approve
                       </Button>
                     </div>
