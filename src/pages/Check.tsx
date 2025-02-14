@@ -20,18 +20,34 @@ const CheckPage = () => {
   const [images, setImages] = useState<ImageRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<FilterType>('all');
+  const [filter, setFilter] = useState<FilterType>('unmarked'); // Start with unmarked images
   const { toast } = useToast();
 
-  const loadImages = async (filterValue: FilterType = 'all') => {
+  const loadImages = async (filterValue: FilterType = 'unmarked') => {
     setLoading(true);
     setError(null);
     try {
+      console.log('Loading images with filter:', filterValue);
       const data = await api.getImages(filterValue === 'all' ? undefined : filterValue);
-      console.log("Fetched images:", data); // Debug log
-      setImages(Array.isArray(data) ? data : []);
+      console.log("Fetched images:", data);
+      
+      if (!Array.isArray(data)) {
+        throw new Error('Invalid response format from server');
+      }
+      
+      setImages(data);
+      
+      if (data.length === 0) {
+        toast({
+          title: "No Images Found",
+          description: "No images available for the selected filter",
+        });
+      }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to load images";
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Failed to connect to the server. Please try again later.";
+      
       console.error("Error loading images:", error);
       setError(errorMessage);
       toast({
