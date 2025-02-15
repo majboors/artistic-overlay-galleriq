@@ -1,10 +1,12 @@
+
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
+import { ArrowLeft } from "lucide-react";
 
 const Upload = () => {
   useEffect(() => {
@@ -36,6 +38,7 @@ const Upload = () => {
     formData.append("datefield", JSON.stringify({ studentName, grade, title }));
 
     try {
+      console.log('Uploading file:', image.name, 'Type:', image.type, 'Size:', image.size);
       await api.uploadImage(formData);
       toast({
         title: "Success!",
@@ -43,13 +46,31 @@ const Upload = () => {
       });
       navigate("/");
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
         title: "Upload Failed",
-        description: "There was an error uploading your artwork",
+        description: "There was an error uploading your artwork. Please ensure it's a valid image file.",
         variant: "destructive",
       });
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      // Check if the file is an image
+      if (!selectedFile.type.startsWith('image/')) {
+        toast({
+          title: "Invalid File Type",
+          description: "Please select a valid image file",
+          variant: "destructive",
+        });
+        e.target.value = '';
+        return;
+      }
+      setImage(selectedFile);
     }
   };
 
@@ -58,6 +79,11 @@ const Upload = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70 -z-10" />
       
       <div className="container max-w-2xl mx-auto px-4 py-16">
+        <Link to="/" className="inline-flex items-center text-white hover:text-gray-300 mb-6">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Home
+        </Link>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -112,7 +138,7 @@ const Upload = () => {
               <Input
                 type="file"
                 accept="image/*"
-                onChange={(e) => setImage(e.target.files?.[0] || null)}
+                onChange={handleImageChange}
                 className="w-full"
               />
             </div>
@@ -120,7 +146,7 @@ const Upload = () => {
             <Button
               type="submit"
               className="w-full"
-              disabled={isUploading}
+              disabled={isUploading || !image}
             >
               {isUploading ? "Uploading..." : "Submit Artwork"}
             </Button>
