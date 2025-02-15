@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
@@ -10,20 +11,20 @@ import type { ImageRecord } from "@/types/api";
 const inspirationArtworks = [{
   id: 1,
   title: "Innocence Under Siege",
-  artist: "Sarah Ahmed",
-  grade: "Grade 12",
+  artist: "Waleed Ajmal",
+  grade: "Grade IS2A",
   imageUrl: "https://i.ibb.co/Fk1fHsXF/0-0.jpg"
 }, {
   id: 2,
   title: "Duty and Destruction",
-  artist: "Ali Hassan",
-  grade: "Grade 11",
+  artist: "Shaheer Afzal",
+  grade: "Grade IS2A",
   imageUrl: "https://i.ibb.co/m5JPMRGm/0-3-3.jpg"
 }, {
   id: 3,
   title: "Honor in the Arena",
-  artist: "Fatima Khan",
-  grade: "Grade 12",
+  artist: "Mansoor Ahmed Toor",
+  grade: "Grade IS2A",
   imageUrl: "https://i.ibb.co/vv1LQqZw/0-1.jpg"
 }];
 
