@@ -15,16 +15,16 @@ const inspirationArtworks = [{
   imageUrl: "https://i.ibb.co/Fk1fHsXF/0-0.jpg"
 }, {
   id: 2,
-  title: "Whispers of the Past",
+  title: "Duty and Destruction",
   artist: "Ali Hassan",
   grade: "Grade 11",
-  imageUrl: "https://i.ibb.co/hR4QJBzs/0-3-2.jpg"
+  imageUrl: "https://i.ibb.co/m5JPMRGm/0-3-3.jpg"
 }, {
   id: 3,
-  title: "The Judgment of Shadows",
+  title: "Honor in the Arena",
   artist: "Fatima Khan",
   grade: "Grade 12",
-  imageUrl: "https://i.ibb.co/4wcmr62Z/0-3.jpg"
+  imageUrl: "https://i.ibb.co/vv1LQqZw/0-1.jpg"
 }];
 
 const features = [{
