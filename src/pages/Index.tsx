@@ -9,22 +9,22 @@ import type { ImageRecord } from "@/types/api";
 
 const inspirationArtworks = [{
   id: 1,
-  title: "Abstract Harmony",
+  title: "Innocence Under Siege",
   artist: "Sarah Ahmed",
   grade: "Grade 12",
-  imageUrl: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+  imageUrl: "https://i.ibb.co/Fk1fHsXF/0-0.jpg"
 }, {
   id: 2,
-  title: "Digital Dreams",
+  title: "Whispers of the Past",
   artist: "Ali Hassan",
   grade: "Grade 11",
-  imageUrl: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+  imageUrl: "https://i.ibb.co/hR4QJBzs/0-3-2.jpg"
 }, {
   id: 3,
-  title: "Nature's Palette",
+  title: "The Judgment of Shadows",
   artist: "Fatima Khan",
   grade: "Grade 12",
-  imageUrl: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+  imageUrl: "https://i.ibb.co/4wcmr62Z/0-3.jpg"
 }];
 
 const features = [{
