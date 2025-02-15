@@ -9,7 +9,6 @@ const axiosInstance = axios.create({
   timeout: 30000,
   headers: {
     'Accept': 'application/json',
-    'Content-Type': 'application/json',
   },
   withCredentials: false
 });
@@ -32,7 +31,12 @@ axiosInstance.interceptors.response.use(
 
 export const api = {
   uploadImage: async (formData: FormData) => {
-    const response = await axiosInstance.post("/upload", formData);
+    // Remove Content-Type header to let the browser set it with the boundary
+    const response = await axiosInstance.post("/upload", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   },
 

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -98,20 +99,35 @@ const ApiTestPage = () => {
       });
       return;
     }
+
     try {
       setLoading('uploadImage');
       const formData = new FormData();
+      
+      // Ensure we're using the correct field name 'image' as expected by the API
       formData.append('image', file);
+      
+      // Log the FormData contents for debugging
+      console.log('Uploading file:', file.name, 'Type:', file.type, 'Size:', file.size);
+      
       const result = await api.uploadImage(formData);
       addResponse('POST /upload', result);
       toast({
         title: "Success",
         description: "Image uploaded successfully",
       });
+      
+      // Clear the file input after successful upload
+      setFile(null);
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = '';
+      }
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
         title: "Error",
-        description: "Failed to upload image",
+        description: "Failed to upload image. Please ensure it's a valid image file.",
         variant: "destructive",
       });
     } finally {
@@ -270,14 +286,29 @@ const ApiTestPage = () => {
               <div className="flex-1">
                 <Input
                   type="file"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  onChange={(e) => {
+                    const selectedFile = e.target.files?.[0];
+                    if (selectedFile) {
+                      // Check if the file is an image
+                      if (!selectedFile.type.startsWith('image/')) {
+                        toast({
+                          title: "Error",
+                          description: "Please select a valid image file",
+                          variant: "destructive",
+                        });
+                        e.target.value = '';
+                        return;
+                      }
+                      setFile(selectedFile);
+                    }
+                  }}
                   className="bg-gray-700 border-gray-600"
                   accept="image/*"
                 />
               </div>
               <Button
                 onClick={testUploadImage}
-                disabled={loading === 'uploadImage'}
+                disabled={loading === 'uploadImage' || !file}
                 variant="outline"
               >
                 <Upload className="mr-2 h-4 w-4" />
