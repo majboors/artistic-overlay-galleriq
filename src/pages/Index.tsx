@@ -245,6 +245,41 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Inspiration Section */}
+      <section className="relative z-10 px-6 py-16">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-white mb-12 text-center">Featured Inspirational Artworks</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {inspirationArtworks.map((artwork) => (
+              <motion.div
+                key={artwork.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="group relative"
+              >
+                <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
+                  <img
+                    src={artwork.imageUrl}
+                    alt={artwork.title}
+                    className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute bottom-0 left-0 right-0 p-6">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle className="w-4 h-4 text-primary" />
+                        <p className="text-sm text-primary">{artwork.grade}</p>
+                      </div>
+                      <h3 className="text-xl font-semibold text-white mb-1">{artwork.title}</h3>
+                      <p className="text-gray-300">{artwork.artist}</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="relative z-10 px-6 py-16 bg-black/30">
         <div className="max-w-6xl mx-auto">
