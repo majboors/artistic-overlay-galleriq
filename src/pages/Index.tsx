@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Image, Star, Award, Rocket, CheckCircle, Wand2, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { Plus, Image, Star, Award, Rocket, CheckCircle, Wand2, ChevronLeft, ChevronRight, ArrowRight, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { parseImageData } from "@/lib/utils";
 import type { ImageRecord } from "@/types/api";
@@ -51,6 +51,15 @@ const features = [{
   title: "Inspire Others",
   description: "Your art can inspire fellow students to create"
 }];
+
+const LoadingScreen = () => (
+  <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50">
+    <div className="text-center">
+      <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+      <p className="text-white text-lg">Loading Art Gallery...</p>
+    </div>
+  </div>
+);
 
 const ArtworkGrid = ({ submissions, title }: { submissions: ImageRecord[], title: string }) => {
   const [selectedImage, setSelectedImage] = useState<ImageRecord | null>(null);
@@ -242,6 +251,7 @@ const Index = () => {
   useEffect(() => {
     const loadSubmissions = async () => {
       try {
+        setLoading(true);
         const data = await api.getImages('true');
         console.log('Received approved submissions:', data);
         
@@ -269,7 +279,7 @@ const Index = () => {
       } catch (error) {
         console.error('Failed to load submissions:', error);
       } finally {
-        setLoading(false);
+        setTimeout(() => setLoading(false), 500);
       }
     };
     loadSubmissions();
@@ -280,12 +290,21 @@ const Index = () => {
     navigate(`/upload?type=${type}`);
   };
 
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
   return (
     <div className="min-h-screen w-full overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70 -z-10" />
       
       {/* Hero Section */}
-      <header className="relative z-10 px-6 py-16 md:py-24 text-center">
+      <motion.header
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="relative z-10 px-6 py-16 md:py-24 text-center"
+      >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -315,7 +334,7 @@ const Index = () => {
             </a>
           </div>
         </motion.div>
-      </header>
+      </motion.header>
 
       {/* Type Selection Dialog */}
       <Dialog open={showTypeDialog} onOpenChange={setShowTypeDialog}>
@@ -345,7 +364,12 @@ const Index = () => {
       </Dialog>
 
       {/* Features Section */}
-      <section className="relative z-10 px-6 py-16 bg-black/30">
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+        className="relative z-10 px-6 py-16 bg-black/30"
+      >
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-white text-center mb-12">Why Submit Your Art?</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -366,10 +390,15 @@ const Index = () => {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Inspiration Section */}
-      <section className="relative z-10 px-6 py-16">
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.4 }}
+        className="relative z-10 px-6 py-16"
+      >
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-white mb-12 text-center">Featured Inspirational Artworks</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -401,36 +430,51 @@ const Index = () => {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Competition Winners Section */}
       {competitionWinners.length > 0 && (
-        <section className="relative z-10 px-6 py-16">
+        <motion.section
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="relative z-10 px-6 py-16"
+        >
           <ArtworkGrid
             submissions={competitionWinners}
             title="Competition Winners"
           />
-        </section>
+        </motion.section>
       )}
 
       {/* AI Submissions Section */}
       {aiSubmissions.length > 0 && (
-        <section className="relative z-10 px-6 py-16 bg-black/30">
+        <motion.section
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+          className="relative z-10 px-6 py-16 bg-black/30"
+        >
           <ArtworkGrid
             submissions={aiSubmissions}
             title="AI Generated Artworks"
           />
-        </section>
+        </motion.section>
       )}
 
       {/* Hand Drawn Submissions Section */}
       {handDrawnSubmissions.length > 0 && (
-        <section className="relative z-10 px-6 py-16">
+        <motion.section
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 1 }}
+          className="relative z-10 px-6 py-16"
+        >
           <ArtworkGrid
             submissions={handDrawnSubmissions}
             title="Hand Drawn Artworks"
           />
-        </section>
+        </motion.section>
       )}
 
       {/* No Submissions Message */}
