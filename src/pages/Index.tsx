@@ -51,48 +51,82 @@ const features = [{
   description: "Your art can inspire fellow students to create"
 }];
 
-const ArtworkGrid = ({ submissions, title }: { submissions: ImageRecord[], title: string }) => (
-  <div className="max-w-6xl mx-auto">
-    <h2 className="text-3xl font-bold text-white mb-12 text-center">{title}</h2>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {submissions.map((submission) => {
-        const details = parseImageData(submission.datefield);
-        return (
-          <motion.div
-            key={submission.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="group relative"
-          >
-            <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
-              <img
-                src={api.getImageById(submission.id)}
-                alt={details.title}
-                className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle className="w-4 h-4 text-primary" />
-                    <p className="text-sm text-primary">{details.grade}</p>
-                  </div>
-                  <h3 className="text-xl font-semibold text-white mb-1">{details.title}</h3>
-                  <p className="text-gray-300">{details.studentName}</p>
-                  {details.type === "ai" && (
-                    <div className="mt-2 text-sm text-gray-400">
-                      <p>AI: {details.aiGenerator}</p>
-                      <p className="truncate">Prompt: {details.aiPrompt}</p>
+const ArtworkGrid = ({ submissions, title }: { submissions: ImageRecord[], title: string }) => {
+  const [selectedImage, setSelectedImage] = useState<ImageRecord | null>(null);
+
+  return (
+    <div className="max-w-6xl mx-auto">
+      <h2 className="text-3xl font-bold text-white mb-12 text-center">{title}</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {submissions.map((submission) => {
+          const details = parseImageData(submission.datefield);
+          return (
+            <motion.div
+              key={submission.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="group relative cursor-pointer"
+              onClick={() => setSelectedImage(submission)}
+            >
+              <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
+                <img
+                  src={api.getImageById(submission.id)}
+                  alt={details.title}
+                  className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CheckCircle className="w-4 h-4 text-primary" />
+                      <p className="text-sm text-primary">{details.grade}</p>
                     </div>
-                  )}
+                    <h3 className="text-xl font-semibold text-white mb-1">{details.title}</h3>
+                    <p className="text-gray-300">{details.studentName}</p>
+                    {details.type === "ai" && (
+                      <div className="mt-2 text-sm text-gray-400">
+                        <p>AI: {details.aiGenerator}</p>
+                        <p className="truncate">Prompt: {details.aiPrompt}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Image Dialog */}
+      <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+        <DialogContent className="sm:max-w-[900px] p-0 overflow-hidden bg-black/90">
+          {selectedImage && (
+            <div className="relative">
+              <img
+                src={api.getImageById(selectedImage.id)}
+                alt={parseImageData(selectedImage.datefield).title}
+                className="w-full h-full object-contain max-h-[80vh]"
+              />
+              <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 to-transparent">
+                <h3 className="text-xl font-semibold text-white mb-1">
+                  {parseImageData(selectedImage.datefield).title}
+                </h3>
+                <p className="text-gray-300">
+                  {parseImageData(selectedImage.datefield).studentName} - {parseImageData(selectedImage.datefield).grade}
+                </p>
+                {parseImageData(selectedImage.datefield).type === "ai" && (
+                  <div className="mt-2 text-sm text-gray-400">
+                    <p>AI: {parseImageData(selectedImage.datefield).aiGenerator}</p>
+                    <p>Prompt: {parseImageData(selectedImage.datefield).aiPrompt}</p>
+                  </div>
+                )}
+              </div>
             </div>
-          </motion.div>
-        );
-      })}
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
-  </div>
-);
+  );
+};
 
 const Index = () => {
   const [aiSubmissions, setAiSubmissions] = useState<ImageRecord[]>([]);
