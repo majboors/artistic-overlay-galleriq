@@ -245,6 +245,30 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Features Section */}
+      <section className="relative z-10 px-6 py-16 bg-black/30">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-white text-center mb-12">Why Submit Your Art?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="glass p-6 rounded-xl text-center"
+              >
+                <div className="mb-4 inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
+                <p className="text-gray-300">{feature.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Inspiration Section */}
       <section className="relative z-10 px-6 py-16">
         <div className="max-w-6xl mx-auto">
@@ -274,30 +298,6 @@ const Index = () => {
                     </div>
                   </div>
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="relative z-10 px-6 py-16 bg-black/30">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-white text-center mb-12">Why Submit Your Art?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="glass p-6 rounded-xl text-center"
-              >
-                <div className="mb-4 inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
-                  {feature.icon}
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
-                <p className="text-gray-300">{feature.description}</p>
               </motion.div>
             ))}
           </div>
@@ -334,6 +334,7 @@ const Index = () => {
         </section>
       )}
 
+      {/* No Submissions Message */}
       {!loading && aiSubmissions.length === 0 && handDrawnSubmissions.length === 0 && (
         <div className="text-center text-gray-400 py-12">
           <p>No approved submissions yet. Be the first to submit your artwork!</p>
