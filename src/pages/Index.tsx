@@ -144,9 +144,11 @@ const Index = () => {
     const loadSubmissions = async () => {
       try {
         const data = await api.getImages('true');
+        console.log('Received approved submissions:', data);
+        
         const sortedSubmissions = data.reduce((acc: { ai: ImageRecord[], handDrawn: ImageRecord[], winners: ImageRecord[] }, submission: ImageRecord) => {
-          const details = parseImageData(submission.datefield);
-          if (submission.marking === true) {
+          try {
+            const details = parseImageData(submission.datefield);
             if (details.type === "ai") {
               acc.ai.push(submission);
             } else {
@@ -155,10 +157,13 @@ const Index = () => {
             if (details.fromCheckDashboard) {
               acc.winners.push(submission);
             }
+          } catch (error) {
+            console.error('Error parsing submission data:', error, submission);
           }
           return acc;
         }, { ai: [], handDrawn: [], winners: [] });
 
+        console.log('Sorted submissions:', sortedSubmissions);
         setAiSubmissions(sortedSubmissions.ai);
         setHandDrawnSubmissions(sortedSubmissions.handDrawn);
         setCompetitionWinners(sortedSubmissions.winners);
