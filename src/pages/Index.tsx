@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Image, Star, Award, Rocket, CheckCircle, Wand2 } from "lucide-react";
+import { Plus, Image, Star, Award, Rocket, CheckCircle, Wand2, ChevronLeft, ChevronRight } from "lucide-react";
 import { api } from "@/lib/api";
 import { parseImageData } from "@/lib/utils";
 import type { ImageRecord } from "@/types/api";
@@ -53,6 +53,27 @@ const features = [{
 
 const ArtworkGrid = ({ submissions, title }: { submissions: ImageRecord[], title: string }) => {
   const [selectedImage, setSelectedImage] = useState<ImageRecord | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+
+  const handleImageSelect = (submission: ImageRecord) => {
+    const index = submissions.findIndex(s => s.id === submission.id);
+    setSelectedIndex(index);
+    setSelectedImage(submission);
+  };
+
+  const handleNext = () => {
+    if (selectedIndex < submissions.length - 1) {
+      setSelectedIndex(selectedIndex + 1);
+      setSelectedImage(submissions[selectedIndex + 1]);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (selectedIndex > 0) {
+      setSelectedIndex(selectedIndex - 1);
+      setSelectedImage(submissions[selectedIndex - 1]);
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -66,7 +87,7 @@ const ArtworkGrid = ({ submissions, title }: { submissions: ImageRecord[], title
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="group relative cursor-pointer"
-              onClick={() => setSelectedImage(submission)}
+              onClick={() => handleImageSelect(submission)}
             >
               <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
                 <img
@@ -106,6 +127,35 @@ const ArtworkGrid = ({ submissions, title }: { submissions: ImageRecord[], title
                 alt={parseImageData(selectedImage.datefield).title}
                 className="w-full h-full object-contain max-h-[80vh]"
               />
+              
+              {/* Navigation Buttons */}
+              <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-4">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 rounded-full bg-black/50 text-white hover:bg-black/70 disabled:opacity-50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePrevious();
+                  }}
+                  disabled={selectedIndex === 0}
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 rounded-full bg-black/50 text-white hover:bg-black/70 disabled:opacity-50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNext();
+                  }}
+                  disabled={selectedIndex === submissions.length - 1}
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </Button>
+              </div>
+
               <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 to-transparent">
                 <h3 className="text-xl font-semibold text-white mb-1">
                   {parseImageData(selectedImage.datefield).title}
