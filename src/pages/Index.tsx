@@ -1,11 +1,17 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Plus, Image, Star, Award, Rocket, CheckCircle, Wand2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { parseImageData } from "@/lib/utils";
 import type { ImageRecord } from "@/types/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 const inspirationArtworks = [{
   id: 1,
@@ -93,6 +99,8 @@ const Index = () => {
   const [handDrawnSubmissions, setHandDrawnSubmissions] = useState<ImageRecord[]>([]);
   const [competitionWinners, setCompetitionWinners] = useState<ImageRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showTypeDialog, setShowTypeDialog] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.title = "LGS JTI ART SUBMISSIONS";
@@ -110,7 +118,6 @@ const Index = () => {
             } else {
               acc.handDrawn.push(submission);
             }
-            // Add to winners if it was approved through the check dashboard
             if (details.fromCheckDashboard) {
               acc.winners.push(submission);
             }
@@ -129,6 +136,11 @@ const Index = () => {
     };
     loadSubmissions();
   }, []);
+
+  const handleTypeSelection = (type: "ai" | "handdrawn") => {
+    setShowTypeDialog(false);
+    navigate(`/upload?type=${type}`);
+  };
 
   return (
     <div className="min-h-screen w-full overflow-hidden">
@@ -149,12 +161,14 @@ const Index = () => {
             Discover and celebrate the artistic talent of our students through their creative expressions.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link to="/upload">
-              <Button size="lg" className="bg-primary hover:bg-primary/90">
-                <Plus className="mr-2" />
-                Submit Your Artwork
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              className="bg-primary hover:bg-primary/90"
+              onClick={() => setShowTypeDialog(true)}
+            >
+              <Plus className="mr-2" />
+              Submit Your Artwork
+            </Button>
             <a href="https://www.writecream.com/ai-image-generator-free-no-sign-up/" target="_blank" rel="noopener noreferrer">
               <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
                 <Wand2 className="mr-2" />
@@ -164,6 +178,33 @@ const Index = () => {
           </div>
         </motion.div>
       </header>
+
+      {/* Type Selection Dialog */}
+      <Dialog open={showTypeDialog} onOpenChange={setShowTypeDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogTitle>Select Artwork Type</DialogTitle>
+          <DialogDescription>
+            Please specify the type of artwork you're submitting
+          </DialogDescription>
+          
+          <div className="grid gap-4 py-4">
+            <Button
+              onClick={() => handleTypeSelection("ai")}
+              variant="outline"
+              className="w-full"
+            >
+              AI Generated Art
+            </Button>
+            <Button
+              onClick={() => handleTypeSelection("handdrawn")}
+              variant="outline"
+              className="w-full"
+            >
+              Hand Drawn Art
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Features Section */}
       <section className="relative z-10 px-6 py-16 bg-black/30">

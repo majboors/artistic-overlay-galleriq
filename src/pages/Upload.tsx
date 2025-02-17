@@ -1,20 +1,17 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { ArrowLeft } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 
 const Upload = () => {
+  const [searchParams] = useSearchParams();
+  const initialType = searchParams.get("type") as "ai" | "handdrawn" | null;
+
   useEffect(() => {
     document.title = "Upload Artwork - LGS JTI ART SUBMISSIONS";
   }, []);
@@ -24,12 +21,17 @@ const Upload = () => {
   const [grade, setGrade] = useState("");
   const [title, setTitle] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const [showTypeDialog, setShowTypeDialog] = useState(false);
-  const [submissionType, setSubmissionType] = useState<"ai" | "handdrawn" | null>(null);
+  const [submissionType] = useState<"ai" | "handdrawn" | null>(initialType);
   const [aiGenerator, setAiGenerator] = useState("");
   const [aiPrompt, setAiPrompt] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!initialType) {
+      navigate('/');
+    }
+  }, [initialType, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,12 +43,8 @@ const Upload = () => {
       });
       return;
     }
-    setShowTypeDialog(true);
-  };
 
-  const handleFinalSubmit = async (type: "ai" | "handdrawn") => {
-    setSubmissionType(type);
-    if (type === "ai" && (!aiGenerator || !aiPrompt)) {
+    if (submissionType === "ai" && (!aiGenerator || !aiPrompt)) {
       toast({
         title: "Missing AI Information",
         description: "Please provide the AI generator name and prompt used",
@@ -62,8 +60,8 @@ const Upload = () => {
       studentName,
       grade,
       title,
-      type,
-      ...(type === "ai" ? { aiGenerator, aiPrompt } : {})
+      type: submissionType,
+      ...(submissionType === "ai" ? { aiGenerator, aiPrompt } : {})
     }));
 
     try {
@@ -83,7 +81,6 @@ const Upload = () => {
       });
     } finally {
       setIsUploading(false);
-      setShowTypeDialog(false);
     }
   };
 
@@ -103,6 +100,10 @@ const Upload = () => {
     }
   };
 
+  if (!submissionType) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen w-full">
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70 -z-10" />
@@ -118,7 +119,9 @@ const Upload = () => {
           animate={{ opacity: 1, y: 0 }}
           className="glass rounded-xl p-8"
         >
-          <h1 className="text-3xl font-bold text-white mb-8">Submit Your Artwork</h1>
+          <h1 className="text-3xl font-bold text-white mb-8">
+            Submit {submissionType === "ai" ? "AI Generated" : "Hand Drawn"} Artwork
+          </h1>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -160,6 +163,35 @@ const Upload = () => {
               />
             </div>
 
+            {submissionType === "ai" && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-200 mb-2">
+                    AI Generator Used
+                  </label>
+                  <Input
+                    type="text"
+                    value={aiGenerator}
+                    onChange={(e) => setAiGenerator(e.target.value)}
+                    className="w-full"
+                    placeholder="e.g. DALL-E, Midjourney"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-200 mb-2">
+                    Prompt Used
+                  </label>
+                  <Input
+                    type="text"
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    className="w-full"
+                    placeholder="Enter the prompt used to generate the image"
+                  />
+                </div>
+              </>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-gray-200 mb-2">
                 Upload Image
@@ -181,65 +213,6 @@ const Upload = () => {
             </Button>
           </form>
         </motion.div>
-
-        <Dialog open={showTypeDialog} onOpenChange={setShowTypeDialog}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogTitle>Select Artwork Type</DialogTitle>
-            <DialogDescription>
-              Please specify the type of artwork you're submitting
-            </DialogDescription>
-            
-            <div className="grid gap-4 py-4">
-              <Button
-                onClick={() => setSubmissionType("ai")}
-                variant="outline"
-                className="w-full"
-              >
-                AI Generated Art
-              </Button>
-              <Button
-                onClick={() => handleFinalSubmit("handdrawn")}
-                variant="outline"
-                className="w-full"
-              >
-                Hand Drawn Art
-              </Button>
-
-              {submissionType === "ai" && (
-                <div className="space-y-4 mt-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      AI Generator Used
-                    </label>
-                    <Input
-                      type="text"
-                      value={aiGenerator}
-                      onChange={(e) => setAiGenerator(e.target.value)}
-                      placeholder="e.g. DALL-E, Midjourney"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Prompt Used
-                    </label>
-                    <Input
-                      type="text"
-                      value={aiPrompt}
-                      onChange={(e) => setAiPrompt(e.target.value)}
-                      placeholder="Enter the prompt used to generate the image"
-                    />
-                  </div>
-                  <Button
-                    onClick={() => handleFinalSubmit("ai")}
-                    className="w-full"
-                  >
-                    Submit AI Artwork
-                  </Button>
-                </div>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   );
