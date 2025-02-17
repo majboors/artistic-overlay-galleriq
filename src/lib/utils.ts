@@ -6,18 +6,26 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function parseImageData(datefield: string) {
+interface ImageData {
+  studentName: string;
+  grade: string;
+  title: string;
+  type?: "ai" | "handdrawn";
+  aiGenerator?: string;
+  aiPrompt?: string;
+  fromCheckDashboard?: boolean;
+}
+
+export function parseImageData(datefield: string): ImageData {
   try {
-    return JSON.parse(datefield) as {
-      studentName: string;
-      grade: string;
-      title: string;
-    };
+    return JSON.parse(datefield) as ImageData;
   } catch (e) {
     return {
       studentName: "Unknown",
       grade: "Unknown",
-      title: "Unknown"
+      title: "Unknown",
+      type: "handdrawn", // default to hand drawn if not specified
+      fromCheckDashboard: false
     };
   }
 }
