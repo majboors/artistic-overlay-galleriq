@@ -1,11 +1,13 @@
+
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Image, Star, Award, Rocket, CheckCircle, Wand2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Image, Star, Award, Rocket, CheckCircle, Wand2, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { api } from "@/lib/api";
 import { parseImageData } from "@/lib/utils";
 import type { ImageRecord } from "@/types/api";
+import useEmblaCarousel from 'embla-carousel-react';
 import {
   Dialog,
   DialogContent,
@@ -54,6 +56,13 @@ const features = [{
 const ArtworkGrid = ({ submissions, title }: { submissions: ImageRecord[], title: string }) => {
   const [selectedImage, setSelectedImage] = useState<ImageRecord | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [showAll, setShowAll] = useState(false);
+  const [emblaRef] = useEmblaCarousel({
+    align: 'start',
+    containScroll: 'trimSnaps',
+  });
+
+  const displayedSubmissions = showAll ? submissions : submissions.slice(0, 6);
 
   const handleImageSelect = (submission: ImageRecord) => {
     const index = submissions.findIndex(s => s.id === submission.id);
@@ -77,45 +86,88 @@ const ArtworkGrid = ({ submissions, title }: { submissions: ImageRecord[], title
 
   return (
     <div className="max-w-6xl mx-auto">
-      <h2 className="text-3xl font-bold text-white mb-12 text-center">{title}</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {submissions.map((submission) => {
-          const details = parseImageData(submission.datefield);
-          return (
-            <motion.div
-              key={submission.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="group relative cursor-pointer"
-              onClick={() => handleImageSelect(submission)}
-            >
-              <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
-                <img
-                  src={api.getImageById(submission.id)}
-                  alt={details.title}
-                  className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <CheckCircle className="w-4 h-4 text-primary" />
-                      <p className="text-sm text-primary">{details.grade}</p>
-                    </div>
-                    <h3 className="text-xl font-semibold text-white mb-1">{details.title}</h3>
-                    <p className="text-gray-300">{details.studentName}</p>
-                    {details.type === "ai" && (
-                      <div className="mt-2 text-sm text-gray-400">
-                        <p>AI: {details.aiGenerator}</p>
-                        <p className="truncate">Prompt: {details.aiPrompt}</p>
+      <div className="flex items-center justify-between mb-12">
+        <h2 className="text-3xl font-bold text-white">{title}</h2>
+        {submissions.length > 6 && (
+          <Button 
+            variant="ghost" 
+            className="text-primary hover:text-primary/90"
+            onClick={() => setShowAll(!showAll)}
+          >
+            {showAll ? 'Show Less' : 'View All'}
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        )}
+      </div>
+
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="flex">
+          {displayedSubmissions.map((submission) => {
+            const details = parseImageData(submission.datefield);
+            return (
+              <motion.div
+                key={submission.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="group relative cursor-pointer flex-[0_0_100%] sm:flex-[0_0_50%] lg:flex-[0_0_33.333%] pl-4 first:pl-0"
+                onClick={() => handleImageSelect(submission)}
+              >
+                <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
+                  <img
+                    src={api.getImageById(submission.id)}
+                    alt={details.title}
+                    className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute bottom-0 left-0 right-0 p-6">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle className="w-4 h-4 text-primary" />
+                        <p className="text-sm text-primary">{details.grade}</p>
                       </div>
-                    )}
+                      <h3 className="text-xl font-semibold text-white mb-1">{details.title}</h3>
+                      <p className="text-gray-300">{details.studentName}</p>
+                      {details.type === "ai" && (
+                        <div className="mt-2 text-sm text-gray-400">
+                          <p>AI: {details.aiGenerator}</p>
+                          <p className="truncate">Prompt: {details.aiPrompt}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          );
-        })}
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
+
+      {/* Navigation Dots */}
+      {!showAll && submissions.length > 3 && (
+        <div className="flex justify-center gap-2 mt-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full bg-black/50 text-white hover:bg-black/70"
+            onClick={() => {
+              const embla = emblaRef.current;
+              if (embla) embla.scrollPrev();
+            }}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full bg-black/50 text-white hover:bg-black/70"
+            onClick={() => {
+              const embla = emblaRef.current;
+              if (embla) embla.scrollNext();
+            }}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
       {/* Image Dialog */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
