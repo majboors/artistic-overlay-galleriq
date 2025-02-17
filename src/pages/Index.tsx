@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -57,7 +56,7 @@ const ArtworkGrid = ({ submissions, title }: { submissions: ImageRecord[], title
   const [selectedImage, setSelectedImage] = useState<ImageRecord | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [showAll, setShowAll] = useState(false);
-  const [emblaRef] = useEmblaCarousel({
+  const [emblaRef, emblaApi] = useEmblaCarousel({
     align: 'start',
     containScroll: 'trimSnaps',
   });
@@ -149,8 +148,7 @@ const ArtworkGrid = ({ submissions, title }: { submissions: ImageRecord[], title
             size="icon"
             className="h-8 w-8 rounded-full bg-black/50 text-white hover:bg-black/70"
             onClick={() => {
-              const embla = emblaRef.current;
-              if (embla) embla.scrollPrev();
+              if (emblaApi) emblaApi.scrollPrev();
             }}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -160,8 +158,7 @@ const ArtworkGrid = ({ submissions, title }: { submissions: ImageRecord[], title
             size="icon"
             className="h-8 w-8 rounded-full bg-black/50 text-white hover:bg-black/70"
             onClick={() => {
-              const embla = emblaRef.current;
-              if (embla) embla.scrollNext();
+              if (emblaApi) emblaApi.scrollNext();
             }}
           >
             <ChevronRight className="h-4 w-4" />
