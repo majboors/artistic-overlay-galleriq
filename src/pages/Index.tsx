@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
@@ -46,9 +45,53 @@ const features = [{
   description: "Your art can inspire fellow students to create"
 }];
 
+const ArtworkGrid = ({ submissions, title }: { submissions: ImageRecord[], title: string }) => (
+  <div className="max-w-6xl mx-auto">
+    <h2 className="text-3xl font-bold text-white mb-12 text-center">{title}</h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {submissions.map((submission) => {
+        const details = parseImageData(submission.datefield);
+        return (
+          <motion.div
+            key={submission.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="group relative"
+          >
+            <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
+              <img
+                src={api.getImageById(submission.id)}
+                alt={details.title}
+                className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle className="w-4 h-4 text-primary" />
+                    <p className="text-sm text-primary">{details.grade}</p>
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-1">{details.title}</h3>
+                  <p className="text-gray-300">{details.studentName}</p>
+                  {details.type === "ai" && (
+                    <div className="mt-2 text-sm text-gray-400">
+                      <p>AI: {details.aiGenerator}</p>
+                      <p className="truncate">Prompt: {details.aiPrompt}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        );
+      })}
+    </div>
+  </div>
+);
+
 const Index = () => {
-  const [hoveredId, setHoveredId] = useState<number | null>(null);
-  const [submissions, setSubmissions] = useState<ImageRecord[]>([]);
+  const [aiSubmissions, setAiSubmissions] = useState<ImageRecord[]>([]);
+  const [handDrawnSubmissions, setHandDrawnSubmissions] = useState<ImageRecord[]>([]);
+  const [competitionWinners, setCompetitionWinners] = useState<ImageRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -58,8 +101,26 @@ const Index = () => {
   useEffect(() => {
     const loadSubmissions = async () => {
       try {
-        const data = await api.getImages('true'); // Only get approved submissions
-        setSubmissions(data);
+        const data = await api.getImages('true');
+        const sortedSubmissions = data.reduce((acc: { ai: ImageRecord[], handDrawn: ImageRecord[], winners: ImageRecord[] }, submission: ImageRecord) => {
+          const details = parseImageData(submission.datefield);
+          if (submission.marking === true) {
+            if (details.type === "ai") {
+              acc.ai.push(submission);
+            } else {
+              acc.handDrawn.push(submission);
+            }
+            // Add to winners if it was approved through the check dashboard
+            if (details.fromCheckDashboard) {
+              acc.winners.push(submission);
+            }
+          }
+          return acc;
+        }, { ai: [], handDrawn: [], winners: [] });
+
+        setAiSubmissions(sortedSubmissions.ai);
+        setHandDrawnSubmissions(sortedSubmissions.handDrawn);
+        setCompetitionWinners(sortedSubmissions.winners);
       } catch (error) {
         console.error('Failed to load submissions:', error);
       } finally {
@@ -109,105 +170,66 @@ const Index = () => {
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-white text-center mb-12">Why Submit Your Art?</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => <motion.div key={index} initial={{
-            opacity: 0,
-            y: 20
-          }} animate={{
-            opacity: 1,
-            y: 0
-          }} transition={{
-            duration: 0.5,
-            delay: index * 0.1
-          }} className="glass p-6 rounded-xl text-center">
+            {features.map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="glass p-6 rounded-xl text-center"
+              >
                 <div className="mb-4 inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
                   {feature.icon}
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
                 <p className="text-gray-300">{feature.description}</p>
-              </motion.div>)}
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Featured Artworks Section */}
-      <section className="relative z-10 px-6 py-16">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-white mb-12 text-center">Inspirational Artwork</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {inspirationArtworks.map((artwork, index) => <motion.div key={artwork.id} initial={{
-            opacity: 0,
-            y: 20
-          }} animate={{
-            opacity: 1,
-            y: 0
-          }} transition={{
-            duration: 0.5,
-            delay: index * 0.1
-          }} className="group relative" onMouseEnter={() => setHoveredId(artwork.id)} onMouseLeave={() => setHoveredId(null)}>
-                <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
-                  <img src={artwork.imageUrl} alt={artwork.title} className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-110" />
-                  <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-300 ${hoveredId === artwork.id ? 'opacity-100' : 'opacity-0'}`}>
-                    <div className="absolute bottom-0 left-0 right-0 p-6">
-                      <p className="text-sm text-primary mb-2">{artwork.grade}</p>
-                      <h3 className="text-xl font-semibold text-white mb-1">{artwork.title}</h3>
-                      <p className="text-gray-300">{artwork.artist}</p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>)}
-          </div>
-        </div>
-      </section>
+      {/* Competition Winners Section */}
+      {competitionWinners.length > 0 && (
+        <section className="relative z-10 px-6 py-16">
+          <ArtworkGrid
+            submissions={competitionWinners}
+            title="Competition Winners"
+          />
+        </section>
+      )}
 
-      {/* Recent Submissions Section */}
-      <section className="relative z-10 px-6 py-16 bg-black/30">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-white mb-12 text-center">Featured Submissions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {submissions.map((submission, index) => {
-              const details = parseImageData(submission.datefield);
-              return (
-                <motion.div
-                  key={submission.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="group relative"
-                >
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
-                    <img
-                      src={api.getImageById(submission.id)}
-                      alt={details.title}
-                      className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="absolute bottom-0 left-0 right-0 p-6">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CheckCircle className="w-4 h-4 text-primary" />
-                          <p className="text-sm text-primary">{details.grade}</p>
-                        </div>
-                        <h3 className="text-xl font-semibold text-white mb-1">{details.title}</h3>
-                        <p className="text-gray-300">{details.studentName}</p>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-          {submissions.length === 0 && !loading && (
-            <div className="text-center text-gray-400 py-12">
-              <p>No approved submissions yet. Be the first to submit your artwork!</p>
-              <Link to="/upload" className="inline-block mt-4">
-                <Button variant="outline">
-                  <Plus className="mr-2" />
-                  Submit Artwork
-                </Button>
-              </Link>
-            </div>
-          )}
+      {/* AI Submissions Section */}
+      {aiSubmissions.length > 0 && (
+        <section className="relative z-10 px-6 py-16 bg-black/30">
+          <ArtworkGrid
+            submissions={aiSubmissions}
+            title="AI Generated Artworks"
+          />
+        </section>
+      )}
+
+      {/* Hand Drawn Submissions Section */}
+      {handDrawnSubmissions.length > 0 && (
+        <section className="relative z-10 px-6 py-16">
+          <ArtworkGrid
+            submissions={handDrawnSubmissions}
+            title="Hand Drawn Artworks"
+          />
+        </section>
+      )}
+
+      {!loading && aiSubmissions.length === 0 && handDrawnSubmissions.length === 0 && (
+        <div className="text-center text-gray-400 py-12">
+          <p>No approved submissions yet. Be the first to submit your artwork!</p>
+          <Link to="/upload" className="inline-block mt-4">
+            <Button variant="outline">
+              <Plus className="mr-2" />
+              Submit Artwork
+            </Button>
+          </Link>
         </div>
-      </section>
+      )}
     </div>
   );
 };

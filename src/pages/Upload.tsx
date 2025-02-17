@@ -7,6 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { ArrowLeft } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 const Upload = () => {
   useEffect(() => {
@@ -18,6 +24,10 @@ const Upload = () => {
   const [grade, setGrade] = useState("");
   const [title, setTitle] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [showTypeDialog, setShowTypeDialog] = useState(false);
+  const [submissionType, setSubmissionType] = useState<"ai" | "handdrawn" | null>(null);
+  const [aiGenerator, setAiGenerator] = useState("");
+  const [aiPrompt, setAiPrompt] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -31,11 +41,30 @@ const Upload = () => {
       });
       return;
     }
+    setShowTypeDialog(true);
+  };
+
+  const handleFinalSubmit = async (type: "ai" | "handdrawn") => {
+    setSubmissionType(type);
+    if (type === "ai" && (!aiGenerator || !aiPrompt)) {
+      toast({
+        title: "Missing AI Information",
+        description: "Please provide the AI generator name and prompt used",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsUploading(true);
     const formData = new FormData();
     formData.append("image", image);
-    formData.append("datefield", JSON.stringify({ studentName, grade, title }));
+    formData.append("datefield", JSON.stringify({
+      studentName,
+      grade,
+      title,
+      type,
+      ...(type === "ai" ? { aiGenerator, aiPrompt } : {})
+    }));
 
     try {
       console.log('Uploading file:', image.name, 'Type:', image.type, 'Size:', image.size);
@@ -54,13 +83,13 @@ const Upload = () => {
       });
     } finally {
       setIsUploading(false);
+      setShowTypeDialog(false);
     }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      // Check if the file is an image
       if (!selectedFile.type.startsWith('image/')) {
         toast({
           title: "Invalid File Type",
@@ -152,6 +181,65 @@ const Upload = () => {
             </Button>
           </form>
         </motion.div>
+
+        <Dialog open={showTypeDialog} onOpenChange={setShowTypeDialog}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogTitle>Select Artwork Type</DialogTitle>
+            <DialogDescription>
+              Please specify the type of artwork you're submitting
+            </DialogDescription>
+            
+            <div className="grid gap-4 py-4">
+              <Button
+                onClick={() => setSubmissionType("ai")}
+                variant="outline"
+                className="w-full"
+              >
+                AI Generated Art
+              </Button>
+              <Button
+                onClick={() => handleFinalSubmit("handdrawn")}
+                variant="outline"
+                className="w-full"
+              >
+                Hand Drawn Art
+              </Button>
+
+              {submissionType === "ai" && (
+                <div className="space-y-4 mt-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      AI Generator Used
+                    </label>
+                    <Input
+                      type="text"
+                      value={aiGenerator}
+                      onChange={(e) => setAiGenerator(e.target.value)}
+                      placeholder="e.g. DALL-E, Midjourney"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Prompt Used
+                    </label>
+                    <Input
+                      type="text"
+                      value={aiPrompt}
+                      onChange={(e) => setAiPrompt(e.target.value)}
+                      placeholder="Enter the prompt used to generate the image"
+                    />
+                  </div>
+                  <Button
+                    onClick={() => handleFinalSubmit("ai")}
+                    className="w-full"
+                  >
+                    Submit AI Artwork
+                  </Button>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
