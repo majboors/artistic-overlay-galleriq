@@ -481,14 +481,43 @@ const Index = () => {
       {!loading && aiSubmissions.length === 0 && handDrawnSubmissions.length === 0 && (
         <div className="text-center text-gray-400 py-12">
           <p>No approved submissions yet. Be the first to submit your artwork!</p>
-          <Link to="/upload" className="inline-block mt-4">
-            <Button variant="outline">
-              <Plus className="mr-2" />
-              Submit Artwork
-            </Button>
-          </Link>
+          <Button 
+            variant="outline"
+            onClick={() => setShowTypeDialog(true)}
+            className="inline-flex mt-4"
+          >
+            <Plus className="mr-2" />
+            Submit Artwork
+          </Button>
         </div>
       )}
+
+      {/* Type Selection Dialog - This dialog is already defined above and will work for both buttons */}
+      <Dialog open={showTypeDialog} onOpenChange={setShowTypeDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogTitle>Select Artwork Type</DialogTitle>
+          <DialogDescription>
+            Please specify the type of artwork you're submitting
+          </DialogDescription>
+          
+          <div className="grid gap-4 py-4">
+            <Button
+              onClick={() => handleTypeSelection("ai")}
+              variant="outline"
+              className="w-full"
+            >
+              AI Generated Art
+            </Button>
+            <Button
+              onClick={() => handleTypeSelection("handdrawn")}
+              variant="outline"
+              className="w-full"
+            >
+              Hand Drawn Art
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
