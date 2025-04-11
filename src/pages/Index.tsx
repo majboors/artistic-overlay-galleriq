@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Image, Star, Award, Rocket, CheckCircle, Wand2, ChevronLeft, ChevronRight, ArrowRight, Loader2, Calendar, Filter } from "lucide-react";
+import { Plus, Image, Star, Award, Rocket, CheckCircle, Wand2, ChevronLeft, ChevronRight, ArrowRight, Loader2, Calendar, Filter, Sparkles } from "lucide-react";
 import { api } from "@/lib/api";
 import { parseImageData } from "@/lib/utils";
 import type { ImageRecord } from "@/types/api";
@@ -17,6 +17,14 @@ import {
   ToggleGroup,
   ToggleGroupItem
 } from "@/components/ui/toggle-group";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  CardDescription
+} from "@/components/ui/card";
 
 const inspirationArtworks = [{
   id: 1,
@@ -383,6 +391,19 @@ const currentChallenge = {
   ]
 };
 
+const featuredPrompt = {
+  title: "Dreamscapes: Reality Reimagined",
+  description: "Create an artwork that blends elements of reality with surreal, dreamlike qualities. Consider using unexpected combinations, impossible physics, or fantastical elements in familiar settings.",
+  tips: [
+    "Start with a familiar scene, then add elements that couldn't exist in reality",
+    "Play with scale - make small things enormous or large things tiny",
+    "Experiment with impossible physics or dreamlike transitions between elements",
+    "Consider unusual color palettes that evoke emotion or atmosphere"
+  ],
+  exampleImageUrl: "https://i.ibb.co/vv1LQqZw/0-1.jpg",
+  expiryDate: "2025-04-18"
+};
+
 const Index = () => {
   const [aiSubmissions, setAiSubmissions] = useState<ImageRecord[]>([]);
   const [handDrawnSubmissions, setHandDrawnSubmissions] = useState<ImageRecord[]>([]);
@@ -519,11 +540,75 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Current Challenge Section */}
+      {/* Featured Prompt of the Week Section */}
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.1 }}
+        className="relative z-10 px-6 py-16 bg-gradient-to-r from-indigo-900/50 to-purple-900/50"
+      >
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center gap-3 mb-6">
+            <Sparkles className="h-6 w-6 text-primary" />
+            <h2 className="text-3xl font-bold text-white">Featured Prompt of the Week</h2>
+          </div>
+          
+          <Card className="bg-black/30 border-primary/20 overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
+              <div className="md:col-span-2 p-6">
+                <CardHeader className="p-0 pb-4">
+                  <CardTitle className="text-2xl text-white">{featuredPrompt.title}</CardTitle>
+                  <div className="text-primary text-sm flex items-center mt-2">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Ends in {Math.ceil((new Date(featuredPrompt.expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="p-0 pb-6">
+                  <p className="text-gray-300 mb-6">{featuredPrompt.description}</p>
+                  
+                  <div>
+                    <h4 className="text-lg font-medium text-white mb-3">Creative Tips:</h4>
+                    <ul className="space-y-2">
+                      {featuredPrompt.tips.map((tip, index) => (
+                        <li key={index} className="flex items-start gap-2 text-gray-300">
+                          <Star className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
+                          <span>{tip}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </CardContent>
+                
+                <CardFooter className="p-0 pt-2">
+                  <Button 
+                    className="bg-primary hover:bg-primary/90"
+                    onClick={() => setShowTypeDialog(true)}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Submit Your Interpretation
+                  </Button>
+                </CardFooter>
+              </div>
+              
+              <div className="relative hidden md:block">
+                <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent z-10" />
+                <img 
+                  src={featuredPrompt.exampleImageUrl} 
+                  alt={featuredPrompt.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </Card>
+        </div>
+      </motion.section>
+
+      {/* Current Challenge Section */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
         className="relative z-10 px-6 py-16 bg-black/40"
       >
         <div className="max-w-6xl mx-auto">
@@ -577,7 +662,7 @@ const Index = () => {
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
+        transition={{ duration: 0.8, delay: 0.3 }}
         className="relative z-10 px-6 py-16"
       >
         <div className="max-w-6xl mx-auto">
@@ -606,7 +691,7 @@ const Index = () => {
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.3 }}
+        transition={{ duration: 0.8, delay: 0.4 }}
         className="relative z-10 px-6 py-8 bg-black/30"
       >
         <div className="max-w-6xl mx-auto">
