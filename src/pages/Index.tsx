@@ -471,7 +471,6 @@ const learnAiArtResources = {
   ]
 };
 
-// New achievements data for the Gamification section
 const achievements = [
   {
     id: 1,
@@ -754,4 +753,126 @@ const Index = () => {
         </div>
       </motion.section>
 
+      {/* Gamification & Achievements Section */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+        className="relative z-10 px-6 py-16 bg-gradient-to-r from-blue-900/30 to-indigo-900/30"
+      >
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center gap-3 mb-6">
+            <Trophy className="h-6 w-6 text-primary" />
+            <h2 className="text-3xl font-bold text-white">Gamification & Achievements</h2>
+          </div>
+          
+          <div className="mb-8">
+            <div className="bg-black/30 p-4 rounded-lg mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-medium text-white">Student Progress</h3>
+                <Badge variant="achievement" className="px-3 py-1">250 Points</Badge>
+              </div>
+              <div className="w-full bg-gray-800 rounded-full h-2.5">
+                <div className="bg-gradient-to-r from-yellow-300 to-amber-500 h-2.5 rounded-full" style={{ width: '35%' }}></div>
+              </div>
+            </div>
+            
+            <Tabs defaultValue="achievements" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="achievements">Achievements</TabsTrigger>
+                <TabsTrigger value="challenges">Challenges</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="achievements" className="mt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {achievements.map((achievement) => (
+                    <Card key={achievement.id} className={`bg-black/30 border ${achievement.unlocked ? 'border-primary' : 'border-gray-700'}`}>
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <CardTitle className="text-lg text-white flex items-center gap-2">
+                            <div className={`p-2 rounded-full ${achievement.unlocked ? 'bg-primary/20' : 'bg-gray-800'}`}>
+                              {achievement.icon}
+                            </div>
+                            {achievement.name}
+                          </CardTitle>
+                          {achievement.unlocked && (
+                            <Badge variant="achievement" className="ml-2">
+                              +{achievement.points}
+                            </Badge>
+                          )}
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-gray-300">{achievement.description}</p>
+                        {!achievement.unlocked && 'progress' in achievement && (
+                          <div className="mt-4">
+                            <div className="flex justify-between text-xs text-gray-400 mb-1">
+                              <span>Progress</span>
+                              <span>{achievement.progress}/{achievement.total}</span>
+                            </div>
+                            <div className="w-full bg-gray-800 rounded-full h-2">
+                              <div 
+                                className="bg-primary h-2 rounded-full" 
+                                style={{ width: `${(achievement.progress / achievement.total) * 100}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="challenges" className="mt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {challenges.map((challenge) => (
+                    <Card key={challenge.id} className={`bg-black/30 ${challenge.completed ? 'border-green-500' : 'border-gray-700'}`}>
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <CardTitle className="text-lg text-white flex items-center gap-2">
+                            <div className={`p-2 rounded-full ${challenge.completed ? 'bg-green-500/20' : 'bg-gray-800'}`}>
+                              {challenge.icon}
+                            </div>
+                            {challenge.name}
+                          </CardTitle>
+                          <Badge className={challenge.difficulty === "Easy" ? "bg-green-600" : challenge.difficulty === "Medium" ? "bg-yellow-600" : "bg-red-600"}>
+                            {challenge.difficulty}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-gray-300">{challenge.description}</p>
+                        <div className="flex justify-between items-center mt-4">
+                          <div className="flex items-center gap-1 text-sm">
+                            <Calendar className="h-4 w-4 text-gray-400" />
+                            <span className="text-gray-400">{challenge.expiresIn} days left</span>
+                          </div>
+                          <Badge variant={challenge.completed ? "achievement" : "secondary"} className="ml-2">
+                            {challenge.completed ? "Completed" : `+${challenge.reward} pts`}
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+          
+          <div className="flex justify-center">
+            <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
+              <BookOpen className="mr-2 h-4 w-4" />
+              View All Achievements
+            </Button>
+          </div>
+        </div>
+      </motion.section>
+
       {/* Learn How AI Art is Made Section */}
+      
+    </div>
+  );
+};
+
+export default Index;
