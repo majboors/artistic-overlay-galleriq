@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Image, Star, Award, Rocket, CheckCircle, Wand2, ChevronLeft, ChevronRight, ArrowRight, Loader2, Calendar, Filter, Sparkles } from "lucide-react";
+import { Plus, Image, Star, Award, Rocket, CheckCircle, Wand2, ChevronLeft, ChevronRight, ArrowRight, Loader2, Calendar, Filter, Sparkles, BookOpen } from "lucide-react";
 import { api } from "@/lib/api";
 import { parseImageData } from "@/lib/utils";
 import type { ImageRecord } from "@/types/api";
@@ -25,6 +25,12 @@ import {
   CardTitle,
   CardDescription
 } from "@/components/ui/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
+} from "@/components/ui/tabs";
 
 const inspirationArtworks = [{
   id: 1,
@@ -404,6 +410,66 @@ const featuredPrompt = {
   expiryDate: "2025-04-18"
 };
 
+const learnAiArtResources = {
+  tutorials: [
+    {
+      title: "Creative Bloq's AI Art Tutorials",
+      description: "A comprehensive guide covering tools like Midjourney, DALL·E 3, Stable Diffusion, and Adobe Firefly.",
+      link: "https://www.creativebloq.com/features/ai-art-tutorials"
+    },
+    {
+      title: "AI Art Tutorials Website",
+      description: "Offers a collection of tutorials, styles, techniques, and tips suitable for both novices and advanced users.",
+      link: "https://ai-art-tutorials.com/"
+    },
+    {
+      title: "Adobe Firefly Guide",
+      description: "Learn how to generate AI art using Adobe's tools, with step-by-step instructions on crafting prompts and refining images.",
+      link: "https://www.adobe.com/products/firefly/discover/how-to-make-ai-art.html"
+    }
+  ],
+  videoTutorials: [
+    {
+      title: "Making AI Art: Absolute Beginner's Tutorial",
+      description: "A YouTube tutorial that walks you through the basics of creating AI art.",
+      link: "https://www.youtube.com/watch?v=hlWJHTlk1ME"
+    },
+    {
+      title: "Full Beginner's Guide to AI Art with MidJourney",
+      description: "An in-depth video tutorial focusing on creating art using MidJourney.",
+      link: "https://www.youtube.com/watch?v=NRrC0ZaZO_4"
+    }
+  ],
+  tools: [
+    {
+      title: "Midjourney",
+      description: "An AI program that generates images from textual descriptions.",
+      link: "https://en.wikipedia.org/wiki/Midjourney"
+    },
+    {
+      title: "DALL·E",
+      description: "Developed by OpenAI, it creates images from text prompts.",
+      link: "https://en.wikipedia.org/wiki/DALL-E"
+    },
+    {
+      title: "Stable Diffusion",
+      description: "An open-source model for generating images from text.",
+      link: "https://en.wikipedia.org/wiki/Stable_Diffusion"
+    },
+    {
+      title: "Artbreeder",
+      description: "Allows users to blend images to create new artworks.",
+      link: "https://en.wikipedia.org/wiki/Artbreeder"
+    }
+  ],
+  gifs: [
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExYnNzd25oMW01dzh1OXNvY2l5NWVpeDI4MjB6MGF6YTlzejRnZTFsZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/nTbbt4dylR5LqEWvXD/giphy.gif",
+    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExdjJ6MGRrZTFsa2psZnExYXpvd2UwbHdxZmp3NGRxNHI3OTljcGgyOSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/M9OaZInwdnErACOzpr/giphy.gif",
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExYThkN3R5aDQ3b3l2czAxaWwyd2Y4cGliazkzZnRpcXlqdGdsdzkwYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/L0fmbqu9Tv388MRuxL/giphy.gif",
+    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExeGFnaWZicnhnYmt0cm9lajY0cWZrOHd2amF0Y3QwMzY1emwyem9kMiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/KUT1blBDudxezXFKEy/giphy.gif"
+  ]
+};
+
 const Index = () => {
   const [aiSubmissions, setAiSubmissions] = useState<ImageRecord[]>([]);
   const [handDrawnSubmissions, setHandDrawnSubmissions] = useState<ImageRecord[]>([]);
@@ -601,6 +667,126 @@ const Index = () => {
               </div>
             </div>
           </Card>
+        </div>
+      </motion.section>
+
+      {/* Learn How AI Art is Made Section */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.15 }}
+        className="relative z-10 px-6 py-16 bg-black/40"
+      >
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center gap-3 mb-8">
+            <BookOpen className="h-6 w-6 text-primary" />
+            <h2 className="text-3xl font-bold text-white">Learn How AI Art is Made</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div>
+              <div className="glass p-6 rounded-xl mb-6">
+                <h3 className="text-xl font-semibold text-white mb-4">Understanding AI Art</h3>
+                <p className="text-gray-300 mb-4">
+                  AI art is primarily created using text-to-image diffusion models like Midjourney, DALL·E, and Stable Diffusion. 
+                  These models generate images based on textual descriptions, allowing users to produce diverse artworks by crafting 
+                  detailed prompts. The process involves training on vast datasets to understand and replicate various artistic styles 
+                  and subjects.
+                </p>
+                
+                <Tabs defaultValue="tutorials" className="mt-6">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="tutorials">Tutorials</TabsTrigger>
+                    <TabsTrigger value="videos">Videos</TabsTrigger>
+                    <TabsTrigger value="tools">Tools</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="tutorials" className="mt-4 space-y-4">
+                    {learnAiArtResources.tutorials.map((tutorial, index) => (
+                      <Card key={index} className="bg-black/30 border-primary/20">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-md text-white">{tutorial.title}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pb-2">
+                          <p className="text-sm text-gray-300">{tutorial.description}</p>
+                        </CardContent>
+                        <CardFooter>
+                          <a 
+                            href={tutorial.link} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-primary hover:text-primary/90 text-sm flex items-center"
+                          >
+                            Visit Resource <ArrowRight className="ml-1 h-4 w-4" />
+                          </a>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </TabsContent>
+                  
+                  <TabsContent value="videos" className="mt-4 space-y-4">
+                    {learnAiArtResources.videoTutorials.map((video, index) => (
+                      <Card key={index} className="bg-black/30 border-primary/20">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-md text-white">{video.title}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pb-2">
+                          <p className="text-sm text-gray-300">{video.description}</p>
+                        </CardContent>
+                        <CardFooter>
+                          <a 
+                            href={video.link} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-primary hover:text-primary/90 text-sm flex items-center"
+                          >
+                            Watch Tutorial <ArrowRight className="ml-1 h-4 w-4" />
+                          </a>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </TabsContent>
+                  
+                  <TabsContent value="tools" className="mt-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {learnAiArtResources.tools.map((tool, index) => (
+                        <Card key={index} className="bg-black/30 border-primary/20">
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-md text-white">{tool.title}</CardTitle>
+                          </CardHeader>
+                          <CardContent className="pb-2">
+                            <p className="text-sm text-gray-300">{tool.description}</p>
+                          </CardContent>
+                          <CardFooter>
+                            <a 
+                              href={tool.link} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-primary hover:text-primary/90 text-sm flex items-center"
+                            >
+                              Learn More <ArrowRight className="ml-1 h-4 w-4" />
+                            </a>
+                          </CardFooter>
+                        </Card>
+                      ))}
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              {learnAiArtResources.gifs.map((gif, index) => (
+                <div key={index} className="relative rounded-xl overflow-hidden aspect-square">
+                  <img 
+                    src={gif} 
+                    alt={`AI Art Process ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </motion.section>
 
