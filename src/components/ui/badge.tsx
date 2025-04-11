@@ -18,6 +18,12 @@ const badgeVariants = cva(
         outline: "text-foreground",
         achievement: 
           "border-2 border-yellow-400 bg-gradient-to-r from-yellow-300 to-amber-500 text-black hover:from-yellow-400 hover:to-amber-600",
+        bronze: 
+          "border-2 border-amber-700 bg-gradient-to-r from-amber-600 to-amber-800 text-white hover:from-amber-700 hover:to-amber-900",
+        silver: 
+          "border-2 border-gray-400 bg-gradient-to-r from-gray-300 to-gray-500 text-black hover:from-gray-400 hover:to-gray-600",
+        gold: 
+          "border-2 border-yellow-500 bg-gradient-to-r from-yellow-300 to-amber-600 text-black hover:from-yellow-400 hover:to-amber-700",
       },
     },
     defaultVariants: {

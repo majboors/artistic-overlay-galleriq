@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Image, Star, Award, Rocket, CheckCircle, Wand2, ChevronLeft, ChevronRight, ArrowRight, Loader2, Calendar, Filter, Sparkles, BookOpen, Trophy, Target, Gift, Flame, Compass, Users, Palette } from "lucide-react";
 import { api } from "@/lib/api";
 import { parseImageData } from "@/lib/utils";
+import { achievementStorage, type UserAchievement, type UserStats } from "@/lib/achievement-storage";
 import type { ImageRecord } from "@/types/api";
 import useEmblaCarousel from 'embla-carousel-react';
 import {
@@ -560,18 +561,17 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [showTypeDialog, setShowTypeDialog] = useState(false);
   const [filter, setFilter] = useState<"all" | "ai" | "handdrawn" | "compare">("all");
+  const [userAchievements, setUserAchievements] = useState<UserAchievement[]>([]);
+  const [userStats, setUserStats] = useState<UserStats>(achievementStorage.getStats());
   const navigate = useNavigate();
-
-  const calculateDaysRemaining = () => {
-    const today = new Date();
-    const expiryDate = new Date(currentChallenge.expiryDate);
-    const diffTime = Math.abs(expiryDate.getTime() - today.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
+  
+  const progressPercentage = Math.min(100, Math.floor((userStats.points / 500) * 100));
 
   useEffect(() => {
     document.title = "LGS JTI ART SUBMISSIONS";
+    
+    setUserAchievements(achievementStorage.updateAchievements());
+    setUserStats(achievementStorage.getStats());
   }, []);
 
   useEffect(() => {
@@ -620,11 +620,43 @@ const Index = () => {
     return <LoadingScreen />;
   }
 
+  const challenges = [
+    {
+      id: 1,
+      name: "Prompt Engineering",
+      description: "Create an artwork using advanced prompt techniques",
+      icon: <Target className="w-5 h-5" />,
+      difficulty: "Medium",
+      reward: 75,
+      expiresIn: 5,
+      completed: userStats.aiArtworksUploaded > 0
+    },
+    {
+      id: 2,
+      name: "Style Fusion",
+      description: "Combine two distinct art styles in one AI creation",
+      icon: <Flame className="w-5 h-5" />,
+      difficulty: "Hard",
+      reward: 100,
+      expiresIn: 3,
+      completed: userStats.aiGeneratorsUsed.length >= 2
+    },
+    {
+      id: 3,
+      name: "Weekly Theme Challenge",
+      description: "Submit an artwork for this week's featured prompt",
+      icon: <Gift className="w-5 h-5" />,
+      difficulty: "Easy",
+      reward: 50,
+      expiresIn: 7,
+      completed: userStats.weeklyThemesParticipated.length > 0
+    }
+  ];
+
   return (
     <div className="min-h-screen w-full overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70 -z-10" />
       
-      {/* Hero Section */}
       <motion.header
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -662,7 +694,6 @@ const Index = () => {
         </motion.div>
       </motion.header>
 
-      {/* Type Selection Dialog */}
       <Dialog open={showTypeDialog} onOpenChange={setShowTypeDialog}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogTitle>Select Artwork Type</DialogTitle>
@@ -689,7 +720,6 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Featured Prompt of the Week Section */}
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -753,7 +783,6 @@ const Index = () => {
         </div>
       </motion.section>
 
-      {/* Gamification & Achievements Section */}
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -770,10 +799,10 @@ const Index = () => {
             <div className="bg-black/30 p-4 rounded-lg mb-6">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-lg font-medium text-white">Student Progress</h3>
-                <Badge variant="achievement" className="px-3 py-1">250 Points</Badge>
+                <Badge variant="achievement" className="px-3 py-1">{userStats.points} Points</Badge>
               </div>
               <div className="w-full bg-gray-800 rounded-full h-2.5">
-                <div className="bg-gradient-to-r from-yellow-300 to-amber-500 h-2.5 rounded-full" style={{ width: '35%' }}></div>
+                <div className="bg-gradient-to-r from-yellow-300 to-amber-500 h-2.5 rounded-full" style={{ width: `${progressPercentage}%` }}></div>
               </div>
             </div>
             
@@ -785,26 +814,36 @@ const Index = () => {
               
               <TabsContent value="achievements" className="mt-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {achievements.map((achievement) => (
+                  {userAchievements.map((achievement) => (
                     <Card key={achievement.id} className={`bg-black/30 border ${achievement.unlocked ? 'border-primary' : 'border-gray-700'}`}>
                       <CardHeader>
                         <div className="flex items-start justify-between">
                           <CardTitle className="text-lg text-white flex items-center gap-2">
                             <div className={`p-2 rounded-full ${achievement.unlocked ? 'bg-primary/20' : 'bg-gray-800'}`}>
-                              {achievement.icon}
+                              {achievement.id === 1 ? <Wand2 className="w-5 h-5" /> :
+                               achievement.id === 2 ? <Palette className="w-5 h-5" /> :
+                               achievement.id === 3 ? <Compass className="w-5 h-5" /> :
+                               achievement.id === 4 ? <Star className="w-5 h-5" /> :
+                               <Users className="w-5 h-5" />}
                             </div>
                             {achievement.name}
                           </CardTitle>
                           {achievement.unlocked && (
                             <Badge variant="achievement" className="ml-2">
-                              +{achievement.points}
+                              +{achievement.id === 1 ? 50 : achievement.id * 50}
                             </Badge>
                           )}
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-sm text-gray-300">{achievement.description}</p>
-                        {!achievement.unlocked && 'progress' in achievement && (
+                        <p className="text-sm text-gray-300">
+                          {achievement.id === 1 ? "Create and submit your first AI-generated artwork" :
+                           achievement.id === 2 ? "Submit artworks for 3 different weekly themes" :
+                           achievement.id === 3 ? "Try 5 different AI art generators" :
+                           achievement.id === 4 ? "Have 3 of your artworks featured in the gallery" :
+                           "Inspire 5 other students with your artwork"}
+                        </p>
+                        {!achievement.unlocked && achievement.progress !== undefined && achievement.total !== undefined && (
                           <div className="mt-4">
                             <div className="flex justify-between text-xs text-gray-400 mb-1">
                               <span>Progress</span>
@@ -869,8 +908,175 @@ const Index = () => {
         </div>
       </motion.section>
 
-      {/* Learn How AI Art is Made Section */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.3 }}
+        className="relative z-10 px-6 py-16"
+      >
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center gap-3 mb-8">
+            <BookOpen className="h-6 w-6 text-primary" />
+            <h2 className="text-3xl font-bold text-white">Learn How AI Art is Made</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="bg-black/30 border-primary/20">
+              <CardHeader>
+                <CardTitle className="text-xl text-white">Tutorials</CardTitle>
+                <CardDescription>Read guides to get started</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {learnAiArtResources.tutorials.slice(0, 3).map((resource, index) => (
+                  <div key={index} className="group">
+                    <a href={resource.link} target="_blank" rel="noopener noreferrer" className="block hover:bg-white/5 p-3 rounded-lg transition-colors">
+                      <h4 className="text-white font-medium mb-1 group-hover:text-primary transition-colors">{resource.title}</h4>
+                      <p className="text-sm text-gray-400">{resource.description}</p>
+                    </a>
+                  </div>
+                ))}
+              </CardContent>
+              <CardFooter>
+                <a href="https://ai-art-tutorials.com/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm">
+                  View all tutorials →
+                </a>
+              </CardFooter>
+            </Card>
+            
+            <Card className="bg-black/30 border-primary/20">
+              <CardHeader>
+                <CardTitle className="text-xl text-white">Videos</CardTitle>
+                <CardDescription>Watch step-by-step guides</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {learnAiArtResources.videoTutorials.map((video, index) => (
+                  <div key={index} className="group">
+                    <a href={video.link} target="_blank" rel="noopener noreferrer" className="block hover:bg-white/5 p-3 rounded-lg transition-colors">
+                      <h4 className="text-white font-medium mb-1 group-hover:text-primary transition-colors">{video.title}</h4>
+                      <p className="text-sm text-gray-400">{video.description}</p>
+                    </a>
+                  </div>
+                ))}
+              </CardContent>
+              <CardFooter>
+                <a href="https://www.youtube.com/results?search_query=ai+art+tutorial" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm">
+                  Watch more videos →
+                </a>
+              </CardFooter>
+            </Card>
+            
+            <Card className="bg-black/30 border-primary/20">
+              <CardHeader>
+                <CardTitle className="text-xl text-white">Tools</CardTitle>
+                <CardDescription>Explore AI art generators</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {learnAiArtResources.tools.slice(0, 4).map((tool, index) => (
+                  <div key={index} className="group">
+                    <a href={tool.link} target="_blank" rel="noopener noreferrer" className="block hover:bg-white/5 p-3 rounded-lg transition-colors">
+                      <h4 className="text-white font-medium mb-1 group-hover:text-primary transition-colors">{tool.title}</h4>
+                      <p className="text-sm text-gray-400">{tool.description}</p>
+                    </a>
+                  </div>
+                ))}
+              </CardContent>
+              <CardFooter>
+                <a href="https://www.writecream.com/ai-image-generator-free-no-sign-up/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm">
+                  Try a free generator →
+                </a>
+              </CardFooter>
+            </Card>
+            
+            <Card className="bg-black/30 border-primary/20">
+              <CardHeader>
+                <CardTitle className="text-xl text-white">Inspiration</CardTitle>
+                <CardDescription>Get inspired by examples</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-2">
+                  {learnAiArtResources.gifs.slice(0, 4).map((gif, index) => (
+                    <a key={index} href={gif} target="_blank" rel="noopener noreferrer" className="block aspect-square overflow-hidden rounded-lg hover:opacity-80 transition-opacity">
+                      <img src={gif} alt={`AI art inspiration ${index + 1}`} className="w-full h-full object-cover" />
+                    </a>
+                  ))}
+                </div>
+              </CardContent>
+              <CardFooter>
+                <a href="https://lexica.art/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm">
+                  Explore more inspiration →
+                </a>
+              </CardFooter>
+            </Card>
+          </div>
+        </div>
+      </motion.section>
       
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.4 }}
+        className="relative z-10 px-6 py-8"
+      >
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+            <h2 className="text-3xl font-bold text-white">Artwork Gallery</h2>
+            
+            <div className="flex items-center gap-3">
+              <Filter className="text-gray-400" />
+              <ToggleGroup type="single" defaultValue="all" value={filter} onValueChange={(value) => value && setFilter(value as any)}>
+                <ToggleGroupItem value="all">All</ToggleGroupItem>
+                <ToggleGroupItem value="ai">AI Generated</ToggleGroupItem>
+                <ToggleGroupItem value="handdrawn">Hand Drawn</ToggleGroupItem>
+                <ToggleGroupItem value="compare">Compare</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+          </div>
+          
+          {filter === "compare" ? (
+            <CompareStylesView 
+              aiArtworks={aiSubmissions} 
+              handDrawnArtworks={handDrawnSubmissions} 
+            />
+          ) : filter === "ai" ? (
+            <ArtworkGrid 
+              submissions={aiSubmissions} 
+              title="AI Generated Artwork" 
+            />
+          ) : filter === "handdrawn" ? (
+            <ArtworkGrid 
+              submissions={handDrawnSubmissions}
+              title="Hand Drawn Artwork" 
+            />
+          ) : (
+            <>
+              {competitionWinners.length > 0 && (
+                <div className="mb-24">
+                  <ArtworkGrid 
+                    submissions={competitionWinners} 
+                    title="Competition Winners" 
+                  />
+                </div>
+              )}
+              {aiSubmissions.length > 0 && (
+                <div className="mb-24">
+                  <ArtworkGrid 
+                    submissions={aiSubmissions} 
+                    title="AI Generated Artwork" 
+                  />
+                </div>
+              )}
+              {handDrawnSubmissions.length > 0 && (
+                <div>
+                  <ArtworkGrid 
+                    submissions={handDrawnSubmissions} 
+                    title="Hand Drawn Artwork" 
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </motion.section>
     </div>
   );
 };

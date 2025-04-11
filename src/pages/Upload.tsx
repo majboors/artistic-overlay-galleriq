@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -6,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
+import { achievementStorage } from "@/lib/achievement-storage";
 import { ArrowLeft } from "lucide-react";
 
 const Upload = () => {
@@ -56,21 +56,46 @@ const Upload = () => {
     setIsUploading(true);
     const formData = new FormData();
     formData.append("image", image);
-    formData.append("datefield", JSON.stringify({
+    
+    const submissionData = {
       studentName,
       grade,
       title,
       type: submissionType,
       ...(submissionType === "ai" ? { aiGenerator, aiPrompt } : {})
-    }));
+    };
+    
+    formData.append("datefield", JSON.stringify(submissionData));
 
     try {
       console.log('Uploading file:', image.name, 'Type:', image.type, 'Size:', image.size);
       await api.uploadImage(formData);
+      
+      // Record achievement for the upload
+      achievementStorage.recordUpload(submissionData);
+      
+      // Check if any achievements were unlocked
+      const updatedAchievements = achievementStorage.updateAchievements();
+      const newlyUnlocked = updatedAchievements.filter(a => a.unlockedAt && 
+        new Date().getTime() - new Date(a.unlockedAt).getTime() < 5000);
+      
+      // Show success message
       toast({
         title: "Success!",
         description: "Your artwork has been uploaded successfully",
       });
+      
+      // Show achievement unlocked toasts if any
+      newlyUnlocked.forEach(achievement => {
+        setTimeout(() => {
+          toast({
+            title: "Achievement Unlocked!",
+            description: `${achievement.name} (+${achievement.id === 1 ? 50 : achievement.id * 50} points)`,
+            variant: "default",
+          });
+        }, 500);
+      });
+      
       navigate("/");
     } catch (error) {
       console.error('Upload error:', error);
