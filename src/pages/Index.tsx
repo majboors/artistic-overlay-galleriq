@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Image, Star, Award, Rocket, CheckCircle, Wand2, ChevronLeft, ChevronRight, ArrowRight, Loader2 } from "lucide-react";
+import { Plus, Image, Star, Award, Rocket, CheckCircle, Wand2, ChevronLeft, ChevronRight, ArrowRight, Loader2, Calendar, Filter } from "lucide-react";
 import { api } from "@/lib/api";
 import { parseImageData } from "@/lib/utils";
 import type { ImageRecord } from "@/types/api";
@@ -13,6 +13,10 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  ToggleGroup,
+  ToggleGroupItem
+} from "@/components/ui/toggle-group";
 
 const inspirationArtworks = [{
   id: 1,
@@ -60,6 +64,134 @@ const LoadingScreen = () => (
     </div>
   </div>
 );
+
+const CompareStylesView = ({ aiArtworks, handDrawnArtworks }: { aiArtworks: ImageRecord[], handDrawnArtworks: ImageRecord[] }) => {
+  const [selectedAiIndex, setSelectedAiIndex] = useState(0);
+  const [selectedHandDrawnIndex, setSelectedHandDrawnIndex] = useState(0);
+
+  const handleNextAi = () => {
+    if (selectedAiIndex < aiArtworks.length - 1) {
+      setSelectedAiIndex(selectedAiIndex + 1);
+    }
+  };
+
+  const handlePrevAi = () => {
+    if (selectedAiIndex > 0) {
+      setSelectedAiIndex(selectedAiIndex - 1);
+    }
+  };
+
+  const handleNextHandDrawn = () => {
+    if (selectedHandDrawnIndex < handDrawnArtworks.length - 1) {
+      setSelectedHandDrawnIndex(selectedHandDrawnIndex + 1);
+    }
+  };
+
+  const handlePrevHandDrawn = () => {
+    if (selectedHandDrawnIndex > 0) {
+      setSelectedHandDrawnIndex(selectedHandDrawnIndex - 1);
+    }
+  };
+
+  if (aiArtworks.length === 0 || handDrawnArtworks.length === 0) {
+    return (
+      <div className="text-center text-gray-400 py-8">
+        <p>Not enough submissions to compare. We need at least one AI and one hand-drawn artwork.</p>
+      </div>
+    );
+  }
+
+  const aiArtwork = aiArtworks[selectedAiIndex];
+  const handDrawnArtwork = handDrawnArtworks[selectedHandDrawnIndex];
+  const aiDetails = parseImageData(aiArtwork.datefield);
+  const handDrawnDetails = parseImageData(handDrawnArtwork.datefield);
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {/* AI Artwork */}
+      <div className="relative">
+        <h3 className="text-xl font-semibold text-white mb-4">AI Generated</h3>
+        <div className="aspect-[4/3] overflow-hidden rounded-xl relative">
+          <img
+            src={api.getImageById(aiArtwork.id)}
+            alt={aiDetails.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="absolute bottom-0 left-0 right-0 p-6">
+              <h4 className="text-lg font-semibold text-white">{aiDetails.title}</h4>
+              <p className="text-gray-300">{aiDetails.studentName} - {aiDetails.grade}</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-between mt-4">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handlePrevAi}
+            disabled={selectedAiIndex === 0}
+            className="h-8 w-8 rounded-full bg-black/50 text-white hover:bg-black/70 disabled:opacity-50"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="text-sm text-gray-400">
+            {selectedAiIndex + 1} / {aiArtworks.length}
+          </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleNextAi}
+            disabled={selectedAiIndex === aiArtworks.length - 1}
+            className="h-8 w-8 rounded-full bg-black/50 text-white hover:bg-black/70 disabled:opacity-50"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Hand Drawn Artwork */}
+      <div className="relative">
+        <h3 className="text-xl font-semibold text-white mb-4">Hand Drawn</h3>
+        <div className="aspect-[4/3] overflow-hidden rounded-xl relative">
+          <img
+            src={api.getImageById(handDrawnArtwork.id)}
+            alt={handDrawnDetails.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="absolute bottom-0 left-0 right-0 p-6">
+              <h4 className="text-lg font-semibold text-white">{handDrawnDetails.title}</h4>
+              <p className="text-gray-300">{handDrawnDetails.studentName} - {handDrawnDetails.grade}</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-between mt-4">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handlePrevHandDrawn}
+            disabled={selectedHandDrawnIndex === 0}
+            className="h-8 w-8 rounded-full bg-black/50 text-white hover:bg-black/70 disabled:opacity-50"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="text-sm text-gray-400">
+            {selectedHandDrawnIndex + 1} / {handDrawnArtworks.length}
+          </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleNextHandDrawn}
+            disabled={selectedHandDrawnIndex === handDrawnArtworks.length - 1}
+            className="h-8 w-8 rounded-full bg-black/50 text-white hover:bg-black/70 disabled:opacity-50"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ArtworkGrid = ({ submissions, title }: { submissions: ImageRecord[], title: string }) => {
   const [selectedImage, setSelectedImage] = useState<ImageRecord | null>(null);
@@ -236,13 +368,37 @@ const ArtworkGrid = ({ submissions, title }: { submissions: ImageRecord[], title
   );
 };
 
+const currentChallenge = {
+  title: "Reimagine a Historical Event",
+  description: "Create artwork that reimagines a significant historical event with a creative twist. Consider alternative outcomes, modern perspectives, or artistic reinterpretation.",
+  expiryDate: "2025-05-01",
+  sampleImages: [
+    {
+      id: 1,
+      title: "Moon Landing Reimagined",
+      artist: "Zainab Khan",
+      grade: "Grade IS2B",
+      imageUrl: "https://i.ibb.co/m5JPMRGm/0-3-3.jpg"
+    }
+  ]
+};
+
 const Index = () => {
   const [aiSubmissions, setAiSubmissions] = useState<ImageRecord[]>([]);
   const [handDrawnSubmissions, setHandDrawnSubmissions] = useState<ImageRecord[]>([]);
   const [competitionWinners, setCompetitionWinners] = useState<ImageRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [showTypeDialog, setShowTypeDialog] = useState(false);
+  const [filter, setFilter] = useState<"all" | "ai" | "handdrawn" | "compare">("all");
   const navigate = useNavigate();
+
+  const calculateDaysRemaining = () => {
+    const today = new Date();
+    const expiryDate = new Date(currentChallenge.expiryDate);
+    const diffTime = Math.abs(expiryDate.getTime() - today.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
 
   useEffect(() => {
     document.title = "LGS JTI ART SUBMISSIONS";
@@ -363,12 +519,66 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Current Challenge Section */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.1 }}
+        className="relative z-10 px-6 py-16 bg-black/40"
+      >
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+            <div>
+              <h2 className="text-3xl font-bold text-white mb-2">Current Challenge</h2>
+              <p className="text-primary flex items-center">
+                <Calendar className="w-4 h-4 mr-2" />
+                {calculateDaysRemaining()} days remaining
+              </p>
+            </div>
+            <Button 
+              className="bg-primary hover:bg-primary/90 mt-4 md:mt-0"
+              onClick={() => setShowTypeDialog(true)}
+            >
+              Submit to Challenge
+            </Button>
+          </div>
+          
+          <div className="bg-black/20 rounded-xl p-6 mb-8">
+            <h3 className="text-2xl font-semibold text-white mb-4">{currentChallenge.title}</h3>
+            <p className="text-gray-300 mb-6">{currentChallenge.description}</p>
+            
+            <div className="mt-6">
+              <h4 className="text-lg font-medium text-white mb-4">Sample Interpretations:</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {currentChallenge.sampleImages.map((image) => (
+                  <div key={image.id} className="relative group">
+                    <div className="aspect-[4/3] overflow-hidden rounded-lg">
+                      <img 
+                        src={image.imageUrl} 
+                        alt={image.title}
+                        className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110" 
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="absolute bottom-0 left-0 right-0 p-4">
+                          <h5 className="text-lg font-medium text-white">{image.title}</h5>
+                          <p className="text-sm text-gray-300">{image.artist} - {image.grade}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
       {/* Features Section */}
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="relative z-10 px-6 py-16 bg-black/30"
+        className="relative z-10 px-6 py-16"
       >
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-white text-center mb-12">Why Submit Your Art?</h2>
@@ -392,48 +602,81 @@ const Index = () => {
         </div>
       </motion.section>
 
-      {/* Inspiration Section */}
+      {/* Artwork Gallery Filter */}
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.4 }}
-        className="relative z-10 px-6 py-16"
+        transition={{ duration: 0.8, delay: 0.3 }}
+        className="relative z-10 px-6 py-8 bg-black/30"
       >
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-white mb-12 text-center">Featured Inspirational Artworks</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {inspirationArtworks.map((artwork) => (
-              <motion.div
-                key={artwork.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="group relative"
-              >
-                <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
-                  <img
-                    src={artwork.imageUrl}
-                    alt={artwork.title}
-                    className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="absolute bottom-0 left-0 right-0 p-6">
-                      <div className="flex items-center gap-2 mb-2">
-                        <CheckCircle className="w-4 h-4 text-primary" />
-                        <p className="text-sm text-primary">{artwork.grade}</p>
-                      </div>
-                      <h3 className="text-xl font-semibold text-white mb-1">{artwork.title}</h3>
-                      <p className="text-gray-300">{artwork.artist}</p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+          <div className="flex flex-col md:flex-row items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold text-white mb-4 md:mb-0">Art Gallery</h2>
+            <div className="flex items-center">
+              <Filter className="mr-2 text-primary" />
+              <ToggleGroup type="single" value={filter} onValueChange={(value) => value && setFilter(value as any)}>
+                <ToggleGroupItem value="all" aria-label="All artwork">All</ToggleGroupItem>
+                <ToggleGroupItem value="ai" aria-label="AI artwork">AI Generated</ToggleGroupItem>
+                <ToggleGroupItem value="handdrawn" aria-label="Hand-drawn artwork">Hand Drawn</ToggleGroupItem>
+                <ToggleGroupItem value="compare" aria-label="Compare styles">Compare Styles</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
           </div>
+
+          {/* Compare Styles View */}
+          {filter === "compare" && (
+            <CompareStylesView 
+              aiArtworks={aiSubmissions} 
+              handDrawnArtworks={handDrawnSubmissions}
+            />
+          )}
         </div>
       </motion.section>
 
+      {/* Inspiration Section */}
+      {filter === "all" && (
+        <motion.section
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="relative z-10 px-6 py-16"
+        >
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl font-bold text-white mb-12 text-center">Featured Inspirational Artworks</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {inspirationArtworks.map((artwork) => (
+                <motion.div
+                  key={artwork.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="group relative"
+                >
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
+                    <img
+                      src={artwork.imageUrl}
+                      alt={artwork.title}
+                      className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="absolute bottom-0 left-0 right-0 p-6">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CheckCircle className="w-4 h-4 text-primary" />
+                          <p className="text-sm text-primary">{artwork.grade}</p>
+                        </div>
+                        <h3 className="text-xl font-semibold text-white mb-1">{artwork.title}</h3>
+                        <p className="text-gray-300">{artwork.artist}</p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.section>
+      )}
+
       {/* Competition Winners Section */}
-      {competitionWinners.length > 0 && (
+      {(filter === "all" || filter === "ai" || filter === "handdrawn") && competitionWinners.length > 0 && (
         <motion.section
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -448,7 +691,7 @@ const Index = () => {
       )}
 
       {/* AI Submissions Section */}
-      {aiSubmissions.length > 0 && (
+      {(filter === "all" || filter === "ai") && aiSubmissions.length > 0 && (
         <motion.section
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -463,7 +706,7 @@ const Index = () => {
       )}
 
       {/* Hand Drawn Submissions Section */}
-      {handDrawnSubmissions.length > 0 && (
+      {(filter === "all" || filter === "handdrawn") && handDrawnSubmissions.length > 0 && (
         <motion.section
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
