@@ -9,6 +9,7 @@ import { api } from "@/lib/api";
 import { achievementStorage } from "@/lib/achievement-storage";
 import { ArrowLeft } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import type { SubmissionData } from "@/types/api";
 
 const Upload = () => {
   const [searchParams] = useSearchParams();
@@ -38,7 +39,7 @@ const Upload = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!image || !studentName || !grade || !title) {
+    if (!image || !studentName || !grade || !title || !submissionType) {
       toast({
         title: "Missing Information",
         description: "Please fill in all fields and select an image",
@@ -60,7 +61,7 @@ const Upload = () => {
     const formData = new FormData();
     formData.append("image", image);
     
-    const submissionData = {
+    const submissionData: SubmissionData = {
       studentName,
       grade,
       title,

@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AlertCircle, CheckCircle, Upload, Filter, Image, Eye, ArrowLeft } from "lucide-react";
 import { parseImageData, formatDate } from "@/lib/utils";
 import { Link } from "react-router-dom";
+import type { SubmissionData } from "@/types/api";
 
 interface ImageDisplay {
   id: string;
@@ -15,7 +16,7 @@ interface ImageDisplay {
   title: string;
   timestamp: string;
   marking: boolean | null;
-  type?: "ai" | "handdrawn";
+  type: "ai" | "handdrawn";
   aiPrompt?: string;
   aiGenerator?: string;
   url?: string;
@@ -36,20 +37,28 @@ const Check = () => {
 
   const processImageData = (data: any) => {
     if (Array.isArray(data)) {
-      return data.map(img => ({
-        id: img.id,
-        ...parseImageData(img.datefield),
-        timestamp: formatDate(img.timestamp),
-        marking: img.marking,
-        url: api.getImageById(img.id)
-      }));
+      return data.map(img => {
+        const parsedData = parseImageData(img.datefield);
+        return {
+          id: img.id,
+          ...parsedData,
+          timestamp: formatDate(img.timestamp),
+          marking: img.marking,
+          url: api.getImageById(img.id),
+          // Ensure type is set, defaulting to "handdrawn" if not specified
+          type: parsedData.type || "handdrawn"
+        };
+      });
     } else if (data.id) {
+      const parsedData = parseImageData(data.datefield);
       return [{
         id: data.id,
-        ...parseImageData(data.datefield),
+        ...parsedData,
         timestamp: formatDate(data.timestamp),
         marking: data.marking,
-        url: api.getImageById(data.id)
+        url: api.getImageById(data.id),
+        // Ensure type is set, defaulting to "handdrawn" if not specified
+        type: parsedData.type || "handdrawn"
       }];
     }
     return [];
@@ -143,12 +152,13 @@ const Check = () => {
       formData.append('image', file);
       
       // Add basic metadata for upload from admin
-      const submissionData = {
+      const submissionData: SubmissionData = {
         studentName: "Uploaded from Dashboard",
         grade: "Admin",
         title: file.name.split('.')[0],
+        type: "handdrawn",
         fromCheckDashboard: true
-      };
+      } as any;
       
       formData.append('datefield', JSON.stringify(submissionData));
       

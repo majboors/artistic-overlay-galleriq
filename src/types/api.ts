@@ -20,7 +20,7 @@ export interface SubmissionData {
   studentName: string;
   grade: string;
   title: string;
-  type?: "ai" | "handdrawn";
+  type: "ai" | "handdrawn";
   aiGenerator?: string;
   aiPrompt?: string;
 }
