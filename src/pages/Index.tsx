@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -702,4 +703,252 @@ const Index = () => {
         className="relative z-10 px-6 py-16 bg-gradient-to-r from-indigo-900/50 to-purple-900/50"
       >
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-center gap
+          <div className="flex items-center gap-3 mb-6">
+            <Sparkles className="h-6 w-6 text-primary" />
+            <h2 className="text-3xl font-bold text-white">Featured Prompt</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <Card className="bg-black/30 border-primary/20 lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="text-2xl text-white">{featuredPrompt.title}</CardTitle>
+                <div className="text-primary text-sm flex items-center mt-2">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Available until {new Date(featuredPrompt.expiryDate).toLocaleDateString()}
+                </div>
+              </CardHeader>
+              
+              <CardContent className="space-y-4">
+                <p className="text-gray-300">{featuredPrompt.description}</p>
+                
+                <div>
+                  <h3 className="text-lg font-medium text-white mb-2">Tips</h3>
+                  <ul className="list-disc pl-5 text-gray-400 space-y-1">
+                    {featuredPrompt.tips.map((tip, i) => (
+                      <li key={i}>{tip}</li>
+                    ))}
+                  </ul>
+                </div>
+              </CardContent>
+              
+              <CardFooter>
+                <Button
+                  className="bg-primary hover:bg-primary/90"
+                  onClick={() => setShowTypeDialog(true)}
+                >
+                  Submit Your Interpretation
+                </Button>
+              </CardFooter>
+            </Card>
+            
+            <div className="relative h-[300px] lg:h-auto overflow-hidden rounded-lg">
+              <img 
+                src={featuredPrompt.exampleImageUrl} 
+                alt={featuredPrompt.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent">
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <p className="text-white text-sm">Example artwork based on this prompt</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.section>
+      
+      {/* Student Submissions Section */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.3 }}
+        className="relative z-10 px-6 py-16"
+      >
+        <div className="max-w-6xl mx-auto mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <BookOpen className="h-6 w-6 text-primary" />
+              <h2 className="text-3xl font-bold text-white">Student Submissions</h2>
+            </div>
+            
+            <ToggleGroup 
+              type="single" 
+              defaultValue="all" 
+              value={filter} 
+              onValueChange={(value) => value && setFilter(value as typeof filter)}
+              className="bg-black/30 p-1 rounded-md"
+            >
+              <ToggleGroupItem value="all" className="text-xs px-3">All</ToggleGroupItem>
+              <ToggleGroupItem value="ai" className="text-xs px-3">AI</ToggleGroupItem>
+              <ToggleGroupItem value="handdrawn" className="text-xs px-3">Hand Drawn</ToggleGroupItem>
+              <ToggleGroupItem value="compare" className="text-xs px-3">Compare</ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+          
+          {filter === "compare" ? (
+            <CompareStylesView 
+              aiArtworks={aiSubmissions} 
+              handDrawnArtworks={handDrawnSubmissions} 
+            />
+          ) : filter === "ai" ? (
+            <ArtworkGrid submissions={aiSubmissions} title="AI Generated Artwork" />
+          ) : filter === "handdrawn" ? (
+            <ArtworkGrid submissions={handDrawnSubmissions} title="Hand Drawn Artwork" />
+          ) : (
+            <>
+              {aiSubmissions.length > 0 && (
+                <div className="mb-20">
+                  <ArtworkGrid submissions={aiSubmissions} title="AI Generated Artwork" />
+                </div>
+              )}
+              
+              {handDrawnSubmissions.length > 0 && (
+                <ArtworkGrid submissions={handDrawnSubmissions} title="Hand Drawn Artwork" />
+              )}
+              
+              {aiSubmissions.length === 0 && handDrawnSubmissions.length === 0 && (
+                <div className="text-center py-16">
+                  <p className="text-gray-400 mb-4">No approved submissions found.</p>
+                  <Button
+                    className="bg-primary hover:bg-primary/90"
+                    onClick={() => setShowTypeDialog(true)}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Be the first to submit
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </motion.section>
+
+      {/* Inspiration Section */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.4 }}
+        className="relative z-10 px-6 py-16 bg-gradient-to-r from-purple-900/50 to-indigo-900/50"
+      >
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center gap-3 mb-12">
+            <Trophy className="h-6 w-6 text-primary" />
+            <h2 className="text-3xl font-bold text-white">Inspiration Artwork</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {inspirationArtworks.map((artwork) => (
+              <div key={artwork.id} className="group relative cursor-pointer overflow-hidden rounded-xl">
+                <div className="aspect-[4/3] overflow-hidden">
+                  <img 
+                    src={artwork.imageUrl} 
+                    alt={artwork.title} 
+                    className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-110"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-70 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <h3 className="text-xl font-semibold text-white mb-1">{artwork.title}</h3>
+                    <p className="text-gray-300">{artwork.artist}</p>
+                    <p className="text-primary text-sm mt-1">{artwork.grade}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </motion.section>
+      
+      {/* Learn AI Art Section */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.5 }}
+        className="relative z-10 px-6 py-16"
+      >
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center gap-3 mb-12">
+            <Palette className="h-6 w-6 text-primary" />
+            <h2 className="text-3xl font-bold text-white">Learn AI Art</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <Tabs defaultValue="tutorials" className="w-full">
+                <TabsList className="grid grid-cols-3 mb-8">
+                  <TabsTrigger value="tutorials">Tutorials</TabsTrigger>
+                  <TabsTrigger value="videos">Videos</TabsTrigger>
+                  <TabsTrigger value="tools">Tools</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="tutorials" className="space-y-6">
+                  {learnAiArtResources.tutorials.map((tutorial, index) => (
+                    <div key={index} className="bg-black/30 border border-gray-800 p-4 rounded-lg">
+                      <h3 className="text-lg font-medium text-white mb-2">{tutorial.title}</h3>
+                      <p className="text-gray-400 mb-3">{tutorial.description}</p>
+                      <a 
+                        href={tutorial.link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-primary hover:text-primary/80 text-sm inline-flex items-center"
+                      >
+                        Learn More
+                        <ArrowRight className="ml-1 h-3 w-3" />
+                      </a>
+                    </div>
+                  ))}
+                </TabsContent>
+                
+                <TabsContent value="videos" className="space-y-6">
+                  {learnAiArtResources.videoTutorials.map((video, index) => (
+                    <div key={index} className="bg-black/30 border border-gray-800 p-4 rounded-lg">
+                      <h3 className="text-lg font-medium text-white mb-2">{video.title}</h3>
+                      <p className="text-gray-400 mb-3">{video.description}</p>
+                      <a 
+                        href={video.link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-primary hover:text-primary/80 text-sm inline-flex items-center"
+                      >
+                        Watch Tutorial
+                        <ArrowRight className="ml-1 h-3 w-3" />
+                      </a>
+                    </div>
+                  ))}
+                </TabsContent>
+                
+                <TabsContent value="tools" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {learnAiArtResources.tools.map((tool, index) => (
+                    <div key={index} className="bg-black/30 border border-gray-800 p-4 rounded-lg">
+                      <h3 className="text-lg font-medium text-white mb-1">{tool.title}</h3>
+                      <p className="text-gray-400 text-sm mb-3">{tool.description}</p>
+                      <a 
+                        href={tool.link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-primary hover:text-primary/80 text-xs inline-flex items-center"
+                      >
+                        Learn More
+                        <ArrowRight className="ml-1 h-3 w-3" />
+                      </a>
+                    </div>
+                  ))}
+                </TabsContent>
+              </Tabs>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              {learnAiArtResources.gifs.slice(0, 4).map((gif, index) => (
+                <div key={index} className="aspect-square overflow-hidden rounded-lg">
+                  <img src={gif} alt={`AI art example ${index + 1}`} className="object-cover w-full h-full" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </motion.section>
+    </div>
+  );
+};
+
+export default Index;
