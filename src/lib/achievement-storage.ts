@@ -4,6 +4,7 @@ import { parseImageData } from "./utils";
 export interface UserAchievement {
   id: number;
   name: string;
+  description: string;  // Added description property
   unlocked: boolean;
   unlockedAt?: Date;
   progress?: number;
@@ -191,6 +192,7 @@ const initialAchievements: UserAchievement[] = [
   {
     id: 1,
     name: "First AI Artwork",
+    description: "Create and submit your first AI-generated artwork",
     unlocked: false,
     progress: 0,
     total: 1
@@ -198,6 +200,7 @@ const initialAchievements: UserAchievement[] = [
   {
     id: 2,
     name: "Theme Master",
+    description: "Submit artworks for 3 different weekly themes",
     unlocked: false,
     progress: 0,
     total: 3
@@ -205,6 +208,7 @@ const initialAchievements: UserAchievement[] = [
   {
     id: 3,
     name: "Creative Explorer",
+    description: "Try 5 different AI art generators",
     unlocked: false,
     progress: 0,
     total: 5
@@ -212,6 +216,7 @@ const initialAchievements: UserAchievement[] = [
   {
     id: 4,
     name: "Community Star",
+    description: "Have 3 of your artworks featured in the gallery",
     unlocked: false,
     progress: 0,
     total: 3
@@ -219,6 +224,7 @@ const initialAchievements: UserAchievement[] = [
   {
     id: 5,
     name: "Artistic Influencer",
+    description: "Inspire 5 other students with your artwork",
     unlocked: false,
     progress: 0,
     total: 5
