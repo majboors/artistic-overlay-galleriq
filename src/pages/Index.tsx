@@ -609,11 +609,91 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Current Challenge Section */}
+      <motion.section 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.1 }}
+        className="relative z-10 px-6 py-12 bg-gradient-to-r from-purple-900/50 to-indigo-900/50"
+      >
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center gap-3 mb-6">
+            <Target className="h-6 w-6 text-primary" />
+            <h2 className="text-3xl font-bold text-white">Current Challenge</h2>
+          </div>
+          
+          <Card className="bg-black/30 border-primary/20 overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
+              <div className="md:col-span-2 p-6">
+                <CardHeader className="p-0 pb-4">
+                  <CardTitle className="text-2xl text-white">{currentChallenge.title}</CardTitle>
+                  <div className="text-primary text-sm flex items-center mt-2">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Ends {new Date(currentChallenge.expiryDate).toLocaleDateString()}
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="p-0 pb-6">
+                  <p className="text-gray-300 mb-6">{currentChallenge.description}</p>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                    {challenges.map(challenge => (
+                      <div key={challenge.id} className={`p-4 rounded-lg ${challenge.completed ? 'bg-green-900/30 border border-green-500/30' : 'bg-black/50 border border-gray-700'}`}>
+                        <div className="flex items-start gap-3">
+                          <div className={`p-2 rounded-full ${challenge.completed ? 'bg-green-500/20' : 'bg-gray-800'}`}>
+                            {challenge.icon}
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-white">{challenge.name}</h4>
+                            <p className="text-xs text-gray-400 mt-1">{challenge.description}</p>
+                            <div className="flex items-center justify-between mt-3">
+                              <Badge variant={challenge.difficulty === "Easy" ? "outline" : challenge.difficulty === "Medium" ? "secondary" : "destructive"} className="text-xs">
+                                {challenge.difficulty}
+                              </Badge>
+                              {challenge.completed ? (
+                                <Badge variant="outline" className="bg-green-900/50 text-green-400 border-green-500/50">
+                                  <CheckCircle className="w-3 h-3 mr-1" /> Complete
+                                </Badge>
+                              ) : (
+                                <span className="text-xs text-primary">+{challenge.reward} pts</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+                
+                <CardFooter className="p-0 pt-2">
+                  <Button 
+                    className="bg-primary hover:bg-primary/90"
+                    onClick={() => setShowTypeDialog(true)}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Submit Your Entry
+                  </Button>
+                </CardFooter>
+              </div>
+              
+              <div className="relative hidden md:block">
+                <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent z-10" />
+                <img 
+                  src={currentChallenge.sampleImages[0].imageUrl} 
+                  alt={currentChallenge.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </Card>
+        </div>
+      </motion.section>
+
       {/* Featured Prompt of the Week Section */}
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.1 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
         className="relative z-10 px-6 py-16 bg-gradient-to-r from-indigo-900/50 to-purple-900/50"
       >
         <div className="max-w-6xl mx-auto">
@@ -677,7 +757,7 @@ const Index = () => {
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
+        transition={{ duration: 0.8, delay: 0.3 }}
         className="relative z-10 px-6 py-16 bg-gradient-to-r from-blue-900/30 to-indigo-900/30"
       >
         <div className="max-w-6xl mx-auto">
@@ -798,7 +878,7 @@ const Index = () => {
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.3 }}
+        transition={{ duration: 0.8, delay: 0.4 }}
         className="relative z-10 px-6 py-16"
       >
         <div className="max-w-6xl mx-auto">
@@ -902,7 +982,7 @@ const Index = () => {
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.4 }}
+        transition={{ duration: 0.8, delay: 0.5 }}
         className="relative z-10 px-6 py-8"
       >
         <div className="max-w-6xl mx-auto">
@@ -952,3 +1032,4 @@ const Index = () => {
 };
 
 export default Index;
+
