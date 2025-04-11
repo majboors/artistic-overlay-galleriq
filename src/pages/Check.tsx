@@ -1,10 +1,12 @@
+
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, CheckCircle, Upload, Filter, Image, Eye } from "lucide-react";
+import { AlertCircle, CheckCircle, Upload, Filter, Image, Eye, ArrowLeft } from "lucide-react";
 import { parseImageData, formatDate } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
 interface ImageDisplay {
   id: string;
@@ -13,6 +15,9 @@ interface ImageDisplay {
   title: string;
   timestamp: string;
   marking: boolean | null;
+  type?: "ai" | "handdrawn";
+  aiPrompt?: string;
+  aiGenerator?: string;
   url?: string;
 }
 
@@ -26,6 +31,7 @@ const Check = () => {
   const [imageId, setImageId] = useState("");
   const [viewImageId, setViewImageId] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'true' | 'false' | 'unmarked'>('all');
   const { toast } = useToast();
 
   const processImageData = (data: any) => {
@@ -49,14 +55,20 @@ const Check = () => {
     return [];
   };
 
+  // Load all images when the component mounts
+  useEffect(() => {
+    getImages();
+  }, []);
+
   const getImages = async (filter?: 'true' | 'false' | 'unmarked') => {
     try {
       setLoading('getImages');
+      setActiveFilter(filter || 'all');
       const result = await api.getImages(filter);
       setDisplayedImages(processImageData(result));
       toast({
         title: "Success",
-        description: "Retrieved images successfully",
+        description: `Retrieved ${result.length} images successfully`,
       });
     } catch (error) {
       toast({
@@ -81,7 +93,7 @@ const Check = () => {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to get unmarked image",
+        description: "Failed to get unmarked image. There might be no unmarked images available.",
         variant: "destructive",
       });
     } finally {
@@ -91,14 +103,16 @@ const Check = () => {
 
   const markImage = async (id: string, marking: boolean) => {
     try {
-      setLoading('markImage');
+      setLoading(`markImage-${id}`);
       await api.markImage(id, marking);
+      
       // Update the local state
       setDisplayedImages(prev => 
         prev.map(img => 
           img.id === id ? { ...img, marking } : img
         )
       );
+      
       toast({
         title: "Success",
         description: `Image marked as ${marking ? 'approved' : 'rejected'}`,
@@ -127,6 +141,17 @@ const Check = () => {
       setLoading('uploadImage');
       const formData = new FormData();
       formData.append('image', file);
+      
+      // Add basic metadata for upload from admin
+      const submissionData = {
+        studentName: "Uploaded from Dashboard",
+        grade: "Admin",
+        title: file.name.split('.')[0],
+        fromCheckDashboard: true
+      };
+      
+      formData.append('datefield', JSON.stringify(submissionData));
+      
       const result = await api.uploadImage(formData);
       toast({
         title: "Success",
@@ -145,10 +170,25 @@ const Check = () => {
     }
   };
 
+  const getFilterLabel = () => {
+    switch(activeFilter) {
+      case 'true': return 'Approved Images';
+      case 'false': return 'Rejected Images';
+      case 'unmarked': return 'Unmarked Images';
+      default: return 'All Images';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Image Review Dashboard</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Image Review Dashboard</h1>
+          <Link to="/" className="inline-flex items-center text-white hover:text-gray-300">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Home
+          </Link>
+        </div>
 
         <div className="grid gap-8">
           {/* Controls Section */}
@@ -160,7 +200,7 @@ const Check = () => {
                 <Button
                   onClick={() => getImages()}
                   disabled={loading === 'getImages'}
-                  variant="outline"
+                  variant={activeFilter === 'all' ? 'default' : 'outline'}
                 >
                   <Filter className="mr-2 h-4 w-4" />
                   All Images
@@ -168,21 +208,21 @@ const Check = () => {
                 <Button
                   onClick={() => getImages('unmarked')}
                   disabled={loading === 'getImages'}
-                  variant="outline"
+                  variant={activeFilter === 'unmarked' ? 'default' : 'outline'}
                 >
                   Unmarked
                 </Button>
                 <Button
                   onClick={() => getImages('true')}
                   disabled={loading === 'getImages'}
-                  variant="outline"
+                  variant={activeFilter === 'true' ? 'default' : 'outline'}
                 >
                   Approved
                 </Button>
                 <Button
                   onClick={() => getImages('false')}
                   disabled={loading === 'getImages'}
-                  variant="outline"
+                  variant={activeFilter === 'false' ? 'default' : 'outline'}
                 >
                   Rejected
                 </Button>
@@ -221,6 +261,14 @@ const Check = () => {
             </div>
           </div>
 
+          {/* Current Filter Indicator */}
+          <div className="bg-gray-800 rounded-lg p-4">
+            <h2 className="text-lg font-medium">Currently viewing: {getFilterLabel()}</h2>
+            <p className="text-sm text-gray-400">
+              {displayedImages.length} {displayedImages.length === 1 ? 'image' : 'images'} found
+            </p>
+          </div>
+
           {/* Images Display Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {displayedImages.map((image) => (
@@ -256,22 +304,32 @@ const Check = () => {
                   <p className="text-gray-400">Grade: {image.grade}</p>
                   <p className="text-gray-400 text-sm">{image.timestamp}</p>
                   
+                  {/* AI Specific Info */}
+                  {image.type === 'ai' && image.aiGenerator && (
+                    <div className="bg-gray-700 p-2 rounded text-sm">
+                      <p>AI Generator: {image.aiGenerator}</p>
+                      {image.aiPrompt && (
+                        <p className="line-clamp-2">{`Prompt: ${image.aiPrompt}`}</p>
+                      )}
+                    </div>
+                  )}
+                  
                   {/* Action Buttons */}
                   <div className="flex gap-2 mt-4">
                     <Button
                       onClick={() => markImage(image.id, true)}
-                      variant="outline"
+                      variant={image.marking === true ? "default" : "outline"}
                       className="flex-1"
-                      disabled={loading === 'markImage'}
+                      disabled={loading === `markImage-${image.id}`}
                     >
                       <CheckCircle className="mr-2 h-4 w-4" />
                       Approve
                     </Button>
                     <Button
                       onClick={() => markImage(image.id, false)}
-                      variant="outline"
+                      variant={image.marking === false ? "default" : "outline"}
                       className="flex-1"
-                      disabled={loading === 'markImage'}
+                      disabled={loading === `markImage-${image.id}`}
                     >
                       <AlertCircle className="mr-2 h-4 w-4" />
                       Reject

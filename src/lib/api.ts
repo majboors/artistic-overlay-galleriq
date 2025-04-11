@@ -31,13 +31,26 @@ axiosInstance.interceptors.response.use(
 
 export const api = {
   uploadImage: async (formData: FormData) => {
-    // Remove Content-Type header to let the browser set it with the boundary
-    const response = await axiosInstance.post("/upload", formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
+    try {
+      // Log form data contents for debugging
+      const imageFile = formData.get('image');
+      if (imageFile instanceof File) {
+        console.log('Uploading file:', {
+          name: imageFile.name,
+          type: imageFile.type,
+          size: imageFile.size,
+        });
+      }
+      
+      console.log('Form data fields:', Array.from(formData.entries()).map(([key]) => key));
+      
+      // Remove Content-Type header to let the browser set it with the boundary
+      const response = await axiosInstance.post("/upload", formData);
+      return response.data;
+    } catch (error) {
+      console.error('Upload error details:', error);
+      throw error;
+    }
   },
 
   getUnmarkedImage: async () => {

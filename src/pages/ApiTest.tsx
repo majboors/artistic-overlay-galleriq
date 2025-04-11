@@ -4,7 +4,8 @@ import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, CheckCircle, Upload, Filter, Image, Eye } from "lucide-react";
+import { AlertCircle, CheckCircle, Upload, Filter, Image, Eye, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const ApiTestPage = () => {
   const [responses, setResponses] = useState<{ endpoint: string; response: any }[]>([]);
@@ -29,7 +30,7 @@ const ApiTestPage = () => {
       addResponse(`GET /images${filter ? `?marking=${filter}` : ''}`, result);
       toast({
         title: "Success",
-        description: "Retrieved images successfully",
+        description: `Retrieved ${result.length} images successfully`,
       });
     } catch (error) {
       toast({
@@ -54,7 +55,7 @@ const ApiTestPage = () => {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to get unmarked image",
+        description: "Failed to get unmarked image. There might be no unmarked images available.",
         variant: "destructive",
       });
     } finally {
@@ -107,6 +108,16 @@ const ApiTestPage = () => {
       // Ensure we're using the correct field name 'image' as expected by the API
       formData.append('image', file);
       
+      // Add datefield for testing
+      const testData = {
+        studentName: "Test Upload",
+        grade: "API Test",
+        title: file.name.split('.')[0],
+        type: "handdrawn"
+      };
+      
+      formData.append('datefield', JSON.stringify(testData));
+      
       // Log the FormData contents for debugging
       console.log('Uploading file:', file.name, 'Type:', file.type, 'Size:', file.size);
       
@@ -116,6 +127,11 @@ const ApiTestPage = () => {
         title: "Success",
         description: "Image uploaded successfully",
       });
+      
+      // Update the responses list with the uploaded image ID
+      if (result?.id) {
+        setImageId(result.id);
+      }
       
       // Clear the file input after successful upload
       setFile(null);
@@ -152,7 +168,13 @@ const ApiTestPage = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">API Test Dashboard</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">API Test Dashboard</h1>
+          <Link to="/" className="inline-flex items-center text-white hover:text-gray-300">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Home
+          </Link>
+        </div>
 
         <div className="grid gap-8">
           {/* Get Images Section */}
@@ -315,6 +337,13 @@ const ApiTestPage = () => {
                 Upload
               </Button>
             </div>
+            {file && (
+              <div className="mt-2 text-sm">
+                <p>Selected file: {file.name}</p>
+                <p>Type: {file.type}</p>
+                <p>Size: {Math.round(file.size / 1024)} KB</p>
+              </div>
+            )}
           </div>
 
           {/* Response Log Section */}

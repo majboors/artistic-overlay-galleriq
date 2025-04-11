@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { achievementStorage } from "@/lib/achievement-storage";
 import { ArrowLeft } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 const Upload = () => {
   const [searchParams] = useSearchParams();
@@ -26,6 +28,7 @@ const Upload = () => {
   const [aiPrompt, setAiPrompt] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!initialType) {
@@ -69,7 +72,8 @@ const Upload = () => {
 
     try {
       console.log('Uploading file:', image.name, 'Type:', image.type, 'Size:', image.size);
-      await api.uploadImage(formData);
+      const result = await api.uploadImage(formData);
+      console.log('Upload result:', result);
       
       // Record achievement for the upload
       achievementStorage.recordUpload(submissionData);
@@ -121,7 +125,19 @@ const Upload = () => {
         e.target.value = '';
         return;
       }
+      
       setImage(selectedFile);
+      
+      // Create a preview URL
+      const newPreviewUrl = URL.createObjectURL(selectedFile);
+      setPreviewUrl(newPreviewUrl);
+      
+      // Clean up previous preview URL if it exists
+      return () => {
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+        }
+      };
     }
   };
 
@@ -206,12 +222,12 @@ const Upload = () => {
                   <label className="block text-sm font-medium text-gray-200 mb-2">
                     Prompt Used
                   </label>
-                  <Input
-                    type="text"
+                  <Textarea
                     value={aiPrompt}
                     onChange={(e) => setAiPrompt(e.target.value)}
                     className="w-full"
                     placeholder="Enter the prompt used to generate the image"
+                    rows={4}
                   />
                 </div>
               </>
@@ -227,6 +243,16 @@ const Upload = () => {
                 onChange={handleImageChange}
                 className="w-full"
               />
+              
+              {previewUrl && (
+                <div className="mt-4 border border-gray-700 rounded-lg overflow-hidden bg-gray-800">
+                  <img 
+                    src={previewUrl} 
+                    alt="Preview" 
+                    className="w-full h-auto max-h-[300px] object-contain"
+                  />
+                </div>
+              )}
             </div>
 
             <Button

@@ -15,3 +15,12 @@ export interface ImageRecord {
   datefield: string;
   marking: boolean | null;
 }
+
+export interface SubmissionData {
+  studentName: string;
+  grade: string;
+  title: string;
+  type?: "ai" | "handdrawn";
+  aiGenerator?: string;
+  aiPrompt?: string;
+}
